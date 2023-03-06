@@ -98,17 +98,17 @@ def causal_blanket(data, variables, algo='GES', alpha=.01):
     """Do causal discovery on Markov blanket of `var`."""
     # If `var` is a list, assume it is a list of seed variables.
     if type(variables) == list:
-        blanket = []
+        b = []
         for var in variables:
-            blanket += blanket(data, var, alpha)
+            b += blanket(data, var, alpha=alpha)
     # If it ain't, assume it is the label of a single seed variable.
     else:
         # First` get the blanket, including the seed variable.
-        blanket = blanket(data, variables, alpha)
+        b = blanket(data, variables, alpha=alpha)
     # Avoid repetition.
-    blanket = set(blanket)
+    b = set(b)
     # Then subset the data.
-    subdata = data[blanket]
+    subdata = data[b]
     # Run causal discovery algorithm on blanket data only and return result.
     return algos[algo].predict(subdata)
 

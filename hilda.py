@@ -101,9 +101,9 @@ fcols = { # Basic demographics.
         }
 
 cols = { 'thgage': 'Age (approx.)'
-       , 'thgsex': 'Sex'
-       , 'tmrcurr': 'Marital status'
-       , 'tedhigh1': 'Highest education level achieved'
+       # , 'thgsex': 'Sex'
+       # , 'tmrcurr': 'Marital status'
+       # , 'tedhigh1': 'Highest education level achieved'
        , 'tes': 'Employment  status'
        , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
        , 'tjbmsall': 'Overall job satisfaction'
