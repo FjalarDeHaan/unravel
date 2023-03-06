@@ -75,7 +75,7 @@ def subg(g, v, depth=1):
             vertices = vertices.union(newvs)
     return g.subgraph(vertices)
 
-def gplint(g):
+def gplint(g, fname='graph.html'):
     # Goth mode for display on monitors rather than paper.
     net = Network( directed=True
                  , bgcolor='#000000'
@@ -88,4 +88,4 @@ def gplint(g):
     net.from_nx(g)
     net.toggle_physics(False)
     net.show_buttons()
-    net.show('graph.html')
+    net.show(fname)

@@ -4,23 +4,58 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2022-09-12
-# Last modified: 2022-11-30
+# Last modified: 2023-03-01
 #
 
-import pickle
+import pickle, os
 
 import numpy as np
 import pandas as pd
 import pyreadstat
 
 # Path strings to 20th ('t') wave of HILDA data set.
+project_path = ( "/home/fjalar/pCloudDrive/"
+                 "archive/academia/projects/future-of-work/" )
 hilda_spss_path = "/server/data/hilda/spss-200c/Combined t200c.sav"
-hilda_pickle_path = "/server/data/hilda/combined-t200c.pickle"
+hilda_pickle_path = project_path + "data/hilda/hilda-combined-t200c.pickle"
 
-# with open(hilda_pickle_path, "rb") as f:
-    # hilda = pickle.load(f)
+def clean(raw, fill='mode'):
+    """Clean HILDA data."""
+    # Exclude `object` cols containing wave ids, dates and other irrelevantia.
+    cleaned = raw.select_dtypes(include='float64').copy()
+    # Drop columns with only NaNs.
+    cleaned.dropna(axis='columns', how='all', inplace=True)
+    # Replace ramaining NaNs.
+    if fill == 'mean':
+        # Replace NaNs with mean values --- this messes up variables like `sex`.
+        cleaned.fillna(cleaned.mean().to_dict(), inplace=True)
+    else:
+        # Replace NaNs with most common values.
+        d = cleaned.mode().to_dict()
+        replacements = {key: val[0] for (key, val) in d.items()}
+        cleaned.fillna(replacements, inplace=True)
+    # Drop columns with only one value.
+    cols = [ col for col in cleaned.columns
+                 if pd.unique(cleaned[col]).shape[0]==1 ]
+    cleaned.drop(columns=cols, inplace=True)
+    return cleaned
 
-hilda, meta = pyreadstat.read_sav(hilda_spss_path)
+
+def stats(data):
+    """Some statistics of the data."""
+    rowlabels = [ "nunique"
+                , "min"
+                , "mean"
+                , "max"
+                , "std" ]
+    df = pd.DataFrame(columns=data.columns, index=rowlabels)
+    for col in data.columns:
+        df.loc["nunique", col] = pd.unique(data[col]).shape[0]
+    df.loc["min"] = data.min()
+    df.loc["mean"] = data.mean()
+    df.loc["max"] = data.max()
+    df.loc["std"] = data.std()
+    return df
 
 jcols = { 'tlosatsf': 'Life satisfaction level'
         , 'tjbhruc': 'Combined per week usually worked in all jobs'
@@ -36,6 +71,7 @@ fcols = { # Basic demographics.
         , 'tedhigh1': 'Highest education level achieved'
         , 'tedlhqn': 'Highest education level'
         , 'tes': 'Employment  status'
+        , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
           # Work-related factors.
         , 'tjbmsall': 'Overall job satisfaction'
         , 'tjbmsflx': 'Flexibility to balance work/life satisfaction'
@@ -194,9 +230,17 @@ def col_tedlhqn(column):
            }
     return column.replace(rank).replace('Other', np.NaN)
 
+# Read the HILDA data one way or another.
+if os.path.exists(hilda_spss_path):
+    raw, meta = pyreadstat.read_sav(hilda_spss_path)
+    hilda = clean(raw)
+else:
+    with open(hilda_pickle_path, "rb") as f:
+        hilda, meta = pickle.load(f)
 
-if __name__ == '__main__':
-    ... # Do things.
+# Produce subsets of HILDA based on Fjalar, Brandon or Josh's columns.
+hildaf = hilda[fcols.keys()]
+hildab = hilda[bcols]
+hildaj = hilda[jcols.keys()]
 
-
-
+if __name__ == '__main__': pass
