@@ -20,7 +20,7 @@ import numpy as np
 
 from gplot import *
 from hilda import hilda, meta, fcols, hildaf, hildab, hildaj
-
+from memlim import *
 
 glasso = cdt.independence.graph.Glasso()
 
@@ -137,9 +137,12 @@ if __name__ == '__main__':
     args = cli_args()
     if len(args) > 0:
         print(args)
-    if args[0] == 'blankets':
-        bs = blankets(hilda, list(fcols.keys()), parallel=True)
-        with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
+        if args[0] == 'blankets':
+            memory_limit()
+            bs = blankets(hilda, list(cols.keys()), parallel=True)
+            with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
+        else:
+            run_algo_on_hilda(args[0])
 
 
 

@@ -100,6 +100,16 @@ fcols = { # Basic demographics.
         , 'tlosat': 'Life satisfaction'
         }
 
+cols = { 'thgage': 'Age (approx.)'
+       , 'thgsex': 'Sex'
+       , 'tmrcurr': 'Marital status'
+       , 'tedhigh1': 'Highest education level achieved'
+       , 'tes': 'Employment  status'
+       , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
+       , 'tjbmsall': 'Overall job satisfaction'
+       , 'tghmh': 'SF-36 mental health'
+       }
+
 bcols = [ 'tjomus'
         , 'tskcjed'
         , 'tjomcd'
