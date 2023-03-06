@@ -19,7 +19,7 @@ import pandas as pd
 import numpy as np
 
 from gplot import *
-from hilda import hilda, meta, fcols, hildaf, hildab, hildaj
+from hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj
 from memlim import *
 
 glasso = cdt.independence.graph.Glasso()
