@@ -100,12 +100,13 @@ fcols = { # Basic demographics.
         , 'tlosat': 'Life satisfaction'
         }
 
-cols = { 'thgage': 'Age (approx.)'
+cols = {
+       # 'thgage': 'Age (approx.)'
        # , 'thgsex': 'Sex'
        # , 'tmrcurr': 'Marital status'
        # , 'tedhigh1': 'Highest education level achieved'
-       , 'tes': 'Employment  status'
-       , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
+       # , 'tes': 'Employment  status'
+        'thhda10': 'SEIFA decile of socio-economic disadvantage'
        , 'tjbmsall': 'Overall job satisfaction'
        , 'tghmh': 'SF-36 mental health'
        }
@@ -181,7 +182,66 @@ bcols = [ 'tjomus'
         , 'tjompi'
         , 'tlosatyh' ]
 
-
+contractions = { 'authority': ['tjomls']
+               , 'autonomy': ['tjomini']
+               , 'career and skill development (growth)': [ 'tjoskill'
+                                                          , 'tjomns']
+               , 'career opportunities': ['tlosateo']
+               , 'flexible work practices': [ 'tjbmagh'
+                                            , 'tjbmh'
+                                            , 'tjbmhl'
+                                            , 'tjbmhrh'
+                                            , 'tjbmhrha'
+                                            , 'tjbmhruc'
+                                            , 'tjbmsl'
+                                            , 'tjowpfx'
+                                            , 'tjowphbw'
+                                            , 'tjombrk'
+                                            , 'tjomdw'
+                                            , 'tjomfd'
+                                            , 'tjomflex'
+                                            , 'tjomfw' ]
+               , 'income': [ 'tjowppml'
+                           , 'tjowppnl'
+                           , 'tjompf'
+                           , 'twscei'
+                           , 'twscg'
+                           , 'twsfei'
+                           , 'twsfes' ]
+               , 'job attitudes': [ 'tjbmshrs'
+                                  , 'tjbmspay'
+                                  , 'tlosatfs'
+                                  , 'tlosatft' ]
+               , 'job demand (stress)': [ 'tjomcd'
+                                        , 'tjomfast'
+                                        , 'tjomms'
+                                        , 'tjompi'
+                                        , 'tjomtime'
+                                        , 'tjomwi' ]
+               , 'job resources': [ 'tjowpcc'
+                                  , 'tjowpcr'
+                                  , 'tjowpptw'
+                                  , 'tjowpuml' ]
+               , 'job-satisfaction': ['tjosat', 'tjbmsall']
+               , 'life satisfaction': ['tatwkhpj', 'tlosat']
+               , 'long term employment and job security': [ 'tjbempt'
+                                                          , 'tjbmcntr'
+                                                          , 'tjbmploj'
+                                                          , 'tjbmssec'
+                                                          , 'tjbocct'
+                                                          , 'tjomsf'
+                                                          , 'tjomwf' ]
+               , 'recognition': ['tjostat']
+               , 'skill-job fit': ['tjomus', 'tskcjed']
+               , 'communication with co-workers': ['tjosoc']
+               , 'turnover intentions': ['tjbnewjs']
+               , 'variety': ['tjonovil', 'tjomdw', 'tjomrpt', 'tjomvar']
+               , 'well being (mental and physical)': ['tjompi', 'tlosatyh']
+               , 'work engagement': ['tjbmswrk', 'tjonomfl', 'tjoserve']
+               , 'work-life balance': ['tjbmsflx']
+               , 'working hours': ['tjbhruc', 'tjbhru', 'tjbmhruw']
+               , 'workplace training satisfaction': ['tjbtremp']
+               }
 
 # Replace dicts.
 age = { 'Less than 1 year': 0.0 }

@@ -7,7 +7,7 @@
 # Last modified: 2023-03-06
 #
 
-import pickle, os, multiprocessing
+import pickle, os, multiprocessing, copy
 
 import cdt
 from cdt.metrics import SHD, SID
@@ -133,13 +133,40 @@ def run_algo_on_hilda(algo):
         print("Writing output of %s to %s." % (algo, pname))
         pickle.dump(g, f)
 
+def clean_edge_props(graph):
+    """Destructively remove all edge properties save `width`."""
+    # Loop through all edges as (from, to, contraction) triples.
+    for edge in graph.edges.data('contraction'):
+        # If there actually is contraction information.
+        if edge[2] is not None:
+            del graph.edges[edge[0], edge[1]]['contraction']
+
+def contract(graph, vertices, label=None):
+    """Contract `vertices` into one labelled `vertices[0] or `label`."""
+    # Make very sure this function in non-destructive.
+    graph = copy.deepcopy(graph)
+    # Prepare the label for the contracted vertex.
+    if label is None:
+        # Use first vertex label for the contracted vertex.
+        label = vertices[0]
+    else:
+        # Rename first vertex in graph to use `label` for contracted vertex.
+        nx.relabel_nodes(graph, {vertices[0]: label}, copy=False)
+    # Contract the vertices with the first, one by one consuming the list.
+    for vertex in vertices[1:]:
+        nx.contracted_nodes(graph, label, vertex, self_loops=False, copy=False)
+    # Get rid of 'contraction' edge labels so `gplint()` does not get confused.
+    clean_edge_props(graph)
+    return graph
+
 if __name__ == '__main__':
     args = cli_args()
     if len(args) > 0:
         print(args)
         if args[0] == 'blankets':
-            memory_limit()
-            bs = blankets(hilda, list(cols.keys()), parallel=True)
+            # memory_limit()
+            bs = blankets(hilda, list(cols.keys()), parallel=False)
+            # bs = blankets(hilda, list(cols.keys()), parallel=True)
             with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
         else:
             run_algo_on_hilda(args[0])
