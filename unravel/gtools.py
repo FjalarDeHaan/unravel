@@ -13,7 +13,6 @@ import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
-import pyvis
 from pyvis.network import Network
 
 

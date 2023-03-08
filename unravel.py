@@ -10,6 +10,7 @@
 from unravel import *
 from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj
 
+
 def cli_args():
     """Parse `argv` interpreter-agnostically. Return non-trivial arguments."""
     argv = os.sys.argv
@@ -43,5 +44,3 @@ if __name__ == '__main__':
             with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
         else:
             run_algo_on_hilda(args[0])
-
-
