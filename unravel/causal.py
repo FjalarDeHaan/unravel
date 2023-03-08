@@ -18,9 +18,9 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 
-from src.gplot import *
-from src.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj
-from src.memlim import *
+# from unravel.gplot import *
+# from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj
+# from unravel.memlim import *
 
 glasso = cdt.independence.graph.Glasso()
 
