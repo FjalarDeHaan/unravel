@@ -1,10 +1,10 @@
 #!/bin/env python3
 #
-# gplot.py - some utilities for plotting graphs.
+# gtools.py - some utilities for plotting graphs.
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2023-02-14
-# Last modified: 2023-02-14
+# Last modified: 2023-03-08
 #
 
 import networkx as nx
@@ -15,6 +15,58 @@ import matplotlib.pyplot as plt
 
 import pyvis
 from pyvis.network import Network
+
+
+def clean_edge_props(graph):
+    """Destructively remove all edge properties save `width`."""
+    # Loop through all edges as (from, to, contraction) triples.
+    for edge in graph.edges.data('contraction'):
+        # If there actually is contraction information.
+        if edge[2] is not None:
+            del graph.edges[edge[0], edge[1]]['contraction']
+
+def contract(graph, vertices, label=None):
+    """Contract `vertices` into one labelled `vertices[0] or `label`."""
+    # Make very sure this function in non-destructive.
+    graph = copy.deepcopy(graph)
+    # Prepare the label for the contracted vertex.
+    if label is None:
+        # Use first vertex label for the contracted vertex.
+        label = vertices[0]
+    else:
+        # Rename first vertex in graph to use `label` for contracted vertex.
+        nx.relabel_nodes(graph, {vertices[0]: label}, copy=False)
+    # Contract the vertices with the first, one by one consuming the list.
+    for vertex in vertices[1:]:
+        nx.contracted_nodes(graph, label, vertex, self_loops=False, copy=False)
+    # Get rid of 'contraction' edge labels so `gplint()` does not get confused.
+    clean_edge_props(graph)
+    return graph
+
+def markov_blanket(graph, vertex):
+    if nx.is_directed(graph):
+        parents = list(graph.predecessors(vertex))
+        children = list(graph.successors(vertex))
+        spouses = []
+        for child in children:
+            spouses += list(graph.predecessors(child))
+        blanket = parents + children + spouses + [vertex]
+    else:
+        blanket = []
+        neighbours = list(graph.neighbors(vertex))
+        for neighbour in neighbours:
+            blanket += list(graph.neighbors(neighbour))
+    return graph.subgraph(blanket)
+
+def subgraph(g, v, depth=1):
+    """Return the `depth`-deep induced subgraph starting from vertex `v`."""
+    # Make a list of the vertices involved.
+    vertices = {v} # Don't forget the starting vertex.
+    for n in range(depth):
+        for v in vertices:
+            newvs = {v for v in nx.all_neighbors(g, v)}
+            vertices = vertices.union(newvs)
+    return g.subgraph(vertices)
 
 def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
     # Obtain a layout for the graph.
@@ -64,16 +116,6 @@ def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
 
     # Open a window with the graph.
     plt.show()
-
-def subg(g, v, depth=1):
-    """Return the `depth`-deep induced subgraph starting from vertex `v`."""
-    # Make a list of the vertices involved.
-    vertices = {v} # Don't forget the starting vertex.
-    for n in range(depth):
-        for v in vertices:
-            newvs = {v for v in nx.all_neighbors(g, v)}
-            vertices = vertices.union(newvs)
-    return g.subgraph(vertices)
 
 def gplint(g, fname='graph.html'):
     # Goth mode for display on monitors rather than paper.
