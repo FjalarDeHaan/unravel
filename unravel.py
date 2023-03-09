@@ -4,11 +4,11 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2023-03-8
-# Last modified: 2023-03-08
+# Last modified: 2023-03-09
 #
 
 from unravel import *
-from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj
+from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj, hilda1k
 
 
 def cli_args():
@@ -32,6 +32,14 @@ def run_algo_on_hilda(algo):
         print("Writing output of %s to %s." % (algo, pname))
         pickle.dump(g, f)
 
+def run_algo_on_hilda1k(algo):
+    """Run algorithm `algo` on HILDA and write causal graph to pickle."""
+    print("Running %s algorithm." % algo)
+    g = algos[algo].predict(hilda1k)
+    pname = "graph-" + algo + "-hilda1k" + ".pickle"
+    with open(pname, "wb") as f:
+        print("Writing output of %s to %s." % (algo, pname))
+        pickle.dump(g, f)
 
 if __name__ == '__main__':
     args = cli_args()
@@ -43,4 +51,4 @@ if __name__ == '__main__':
             # bs = blankets(hilda, list(cols.keys()), parallel=True)
             with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
         else:
-            run_algo_on_hilda(args[0])
+            run_algo_on_hilda1k(args[0])

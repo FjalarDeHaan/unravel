@@ -18,6 +18,7 @@ project_path = ( "/home/fjalar/pCloudDrive/"
                  "archive/academia/projects/future-of-work/" )
 hilda_spss_path = "/server/data/hilda/spss-200c/Combined t200c.sav"
 hilda_pickle_path = project_path + "data/hilda/hilda-combined-t200c.pickle"
+raw_pickle_path = project_path + "data/hilda/hilda-combined-t200c-raw.pickle"
 
 def clean(raw, fill='mode'):
     """Clean HILDA data."""
@@ -39,7 +40,6 @@ def clean(raw, fill='mode'):
                  if pd.unique(cleaned[col]).shape[0]==1 ]
     cleaned.drop(columns=cols, inplace=True)
     return cleaned
-
 
 def stats(data):
     """Some statistics of the data."""
@@ -307,10 +307,13 @@ if os.path.exists(hilda_spss_path):
 else:
     with open(hilda_pickle_path, "rb") as f:
         hilda, meta = pickle.load(f)
+    with open(raw_pickle_path, "rb") as f:
+        raw = pickle.load(f)
 
 # Produce subsets of HILDA based on Fjalar, Brandon or Josh's columns.
 hildaf = hilda[fcols.keys()]
 hildab = hilda[bcols]
 hildaj = hilda[jcols.keys()]
+hilda1k = clean(raw.sample(n=1000, random_state=999))
 
 if __name__ == '__main__': pass
