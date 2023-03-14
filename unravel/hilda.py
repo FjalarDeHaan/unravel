@@ -4,7 +4,7 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2022-09-12
-# Last modified: 2023-03-01
+# Last modified: 2023-03-14
 #
 
 import pickle, os
@@ -315,5 +315,6 @@ hildaf = hilda[fcols.keys()]
 hildab = hilda[bcols]
 hildaj = hilda[jcols.keys()]
 hilda1k = clean(raw.sample(n=1000, random_state=999))
+hilda100 = clean(raw.sample(n=100, random_state=999))
 
 if __name__ == '__main__': pass
