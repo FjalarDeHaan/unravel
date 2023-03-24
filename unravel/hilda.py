@@ -316,5 +316,10 @@ hildab = hilda[bcols]
 hildaj = hilda[jcols.keys()]
 hilda1k = clean(raw.sample(n=1000, random_state=999))
 hilda100 = clean(raw.sample(n=100, random_state=999))
+hilda25 = clean(raw.sample(n=25, random_state=999))
+h25x500 = hilda25.sample(n=500, axis='columns', random_state=11)
+# Below subset contains 'tjbmsall':
+h100x300 = hilda100.sample(n=300, axis='columns', random_state=99)
+h100x300_2 = hilda100.sample(n=300, axis='columns', random_state=9999)
 
 if __name__ == '__main__': pass

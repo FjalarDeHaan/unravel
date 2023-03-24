@@ -8,7 +8,7 @@
 #
 
 from unravel import *
-from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj, hilda1k, hilda100
+from unravel.hilda import hilda, meta, fcols, cols, hildaf, hildab, hildaj, hilda1k, hilda100, hilda25, h100x300, h100x300_2
 
 
 def cli_args():

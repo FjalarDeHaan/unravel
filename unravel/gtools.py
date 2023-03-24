@@ -57,6 +57,31 @@ def markov_blanket(graph, vertex):
             blanket += list(graph.neighbors(neighbour))
     return graph.subgraph(blanket)
 
+def ingraph(digraph, vertex):
+    """Return subgraph induced by `vertex` and vertices adjacent _to_ it."""
+    vertices = {vertex}
+    vertices = vertices.union(digraph.predecessors(vertex))
+    return digraph.subgraph(vertices)
+
+def outgraph(digraph, vertex):
+    """Return subgraph induced by `vertex` and vertices adjacent _from_ it."""
+    vertices = {vertex}
+    vertices = vertices.union(digraph.successors(vertex))
+    return digraph.subgraph(vertices)
+
+def causes(digraph, vertex):
+    """Return subgraph induced by causes of `vertex` (identical `ingraph()`)."""
+    return ingraph(digraph, vertex)
+
+def effects(digraph, vertex):
+    """Return subgraph induced by effects of `vertex` (out-Markov blanket)."""
+    children = digraph.successors(vertex)
+    spouses = []
+    for child in children:
+        spouses += digraph.predecessors(child)
+    effects = set(children).union(set(spouses))
+    return digraph.subgraph(effects)
+
 def subgraph(g, v, depth=1):
     """Return the `depth`-deep induced subgraph starting from vertex `v`."""
     # Make a list of the vertices involved.
