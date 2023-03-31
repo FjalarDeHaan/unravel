@@ -27,6 +27,10 @@ dg = { col: meta.column_names_to_labels[col] for col in g.nodes() }
 # Open a plot of the network of causes in a browser.
 gplint(nx.relabel_nodes(causes(g, 'tjbmsall'), dg))
 
+
+
+
+
 # d = { hilda100.columns[i]: anm.predict_proba((hilda100['tjbmsall'], hilda100.iloc[:, i]))
      # for i in range(hilda100.shape[1])
      # if abs(anm.predict_proba((hilda100['tjbmsall'], hilda100.iloc[:, i]))) < 1.5

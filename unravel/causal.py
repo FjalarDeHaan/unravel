@@ -24,6 +24,9 @@ glasso = cdt.independence.graph.Glasso()
 # Make sure SID returns an integer.
 def SID(target, prediction): return int(cdt.metrics.SID(target, prediction))
 
+# Instantiate pairwise algorithm.
+anm = cdt.causality.pairwise.ANM()
+
 # Instantiate all graph-based algorithms.
 algorithms = [ cdt.causality.graph.CAM()
              , cdt.causality.graph.CCDr()
@@ -35,6 +38,26 @@ algorithms = [ cdt.causality.graph.CAM()
              , cdt.causality.graph.SAMv1() ]
 algos = { str(algo).split(sep='.')[3]: algo for algo in algorithms }
 nalgos = len(algos)
+
+"""Return candidate causes/effects for `variables` in `data`."""
+def candidates(variables, data, algo=anm, threshold=.1):
+    # In case of single variable, put it in a list anyway.
+    if type(variables) != list:
+        variables = [variables]
+    # Start with nothing.
+    candidates = []
+    # For each variable, do the pairwise comparison with each column.
+    for variable in variables:
+        score = 0 # Start afresh with each new variable.
+        for i in range(data.shape[1]):
+            score = algo.predict_proba((data[variable], data.iloc[:, i]))
+            found = abs(score) < 1.5 and abs(score) > threshold
+            if found:                              # If a candidate is found...
+                candidates.append(data.columns[i]) # ... add it to the list.
+    # Remove duplicates.
+    candidates = list(set(candidates))
+    # Deliver.
+    return candidates
 
 def distances(data, algos):
     algonames = list(algos.keys())
