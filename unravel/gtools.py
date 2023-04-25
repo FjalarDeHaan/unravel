@@ -26,7 +26,7 @@ def clean_edge_props(graph):
 
 def contract(graph, vertices, label=None):
     """Contract `vertices` into one labelled `vertices[0] or `label`."""
-    # Make very sure this function in non-destructive.
+    # Make very sure this function is non-destructive.
     graph = copy.deepcopy(graph)
     # Prepare the label for the contracted vertex.
     if label is None:

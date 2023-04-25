@@ -4,7 +4,7 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2022-09-12
-# Last modified: 2023-03-14
+# Last modified: 2023-04-25
 #
 
 import pickle, os
@@ -157,7 +157,7 @@ bcols = [ 'tjomus'
         , 'tjbmh'
         , 'tjbmhl'
         # , 'tjbmhrh' # Only in Wave 1.
-        , 'tjbmhrha'
+        # , 'tjbmhrha' # Not enough rows, drops out after sampling.
         , 'tjbmhruc'
         , 'tjbmsl'
         , 'tjowpfx'
@@ -171,7 +171,7 @@ bcols = [ 'tjomus'
         , 'tjbmsflx'
         , 'tjbhruc'
         # , 'tjbhru' # Only in Wave 1.
-        , 'tjbmhruw'
+        # , 'tjbmhruw' # Not enough rows, drops out after sampling.
         # , 'tatwkhpj' # Only in Wave 1.
         , 'tlosat'
         , 'tjbmshrs'
@@ -242,63 +242,33 @@ contractions = { 'authority': ['tjomls']
                , 'working hours': ['tjbhruc', 'tjbhru', 'tjbmhruw']
                , 'workplace training satisfaction': ['tjbtremp']
                }
-
-# Replace dicts.
-age = { 'Less than 1 year': 0.0 }
-sex = { 'Female': 0
-      , 'Male': 1 }
-edu = { 'Doctorate': 14
-      , 'Masters Degree': 13
-      , 'Graduate Diploma': 12
-      , 'Graduate Certificate': 11
-      , 'Honours Bachelor Degree': 10
-      , 'Bachelor Degree but not Honours': 9
-      , 'Advanced Diploma (3 years full-time or equivalent)': 8
-      , 'Associate Degree': 7
-      , 'Diploma (2 years full-time or equivalent)': 6
-      , 'Certificate - Dont know level': 5
-      , 'Certificate level IV': 4
-      , 'Certificate level III': 3
-      , 'Certificate level II': 2
-      , 'Certificate level I': 1
-      , 'Other': np.nan }
-sat = { 'Neither satisfied nor dissatisfied': 5.0
-      , 'Totally dissatisfied': 0.0
-      , 'Totally satisfied': 10.0 }
-dec = { '2nd decile': 20
-      , '3rd decile': 30
-      , '4th decile': 40
-      , '5th decile': 50
-      , '6th decile': 60
-      , '7th decile': 70
-      , '8th decile': 80
-      , '9th decile': 90
-      , 'Highest decile': 100
-      , 'Lowest decile': 10 }
-
-def col_hgage(column):
-    return pd.to_numeric(column, errors='coerce').fillna(0)
-
-def col_hgsex(column):
-    return column.replace({'Female': 0, 'Male': 1})
-
-def col_tedlhqn(column):
-    rank = { 'Doctorate': 14
-           , 'Masters Degree': 13
-           , 'Graduate Diploma': 12
-           , 'Graduate Certificate': 11
-           , 'Honours Bachelor Degree': 10
-           , 'Bachelor Degree but not Honours': 9
-           , 'Advanced Diploma (3 years full-time or equivalent)': 8
-           , 'Associate Degree': 7
-           , 'Diploma (2 years full-time or equivalent)': 6
-           , 'Certificate - Dont know level': 5
-           , 'Certificate level IV': 4
-           , 'Certificate level III': 3
-           , 'Certificate level II': 2
-           , 'Certificate level I': 1
-           }
-    return column.replace(rank).replace('Other', np.NaN)
+ISCO88 ={ 11: "Legislators and senior officials"
+        , 12: "Corporate managers"
+        , 13: "General managers"
+        , 21: "Physical, mathematical and engineering science professionals"
+        , 22: "Life science and health professionals"
+        , 23: "Teaching professionals"
+        , 24: "Other professionals"
+        , 31: "Physical and engineering science associate professionals"
+        , 32: "Life science and health associate professionals"
+        , 33: "Teaching associate professionals"
+        , 34: "Other associate professionals"
+        , 41: "Office clerks"
+        , 42: "Customer services clerks"
+        , 51: "Personal and protective services workers"
+        , 52: "Models, salespersons and demonstrators"
+        , 61: "Market-oriented skilled agricultural and fishery workers"
+        , 62: "Subsistence agricultural and fishery workers"
+        , 71: "Extraction and building trades workers"
+        , 72: "Metal, machinery and related trades workers"
+        , 73: "Precision, handicraft, craft printing and related trades workers"
+        , 74: "Other craft and related trades workers"
+        , 81: "Stationary plant and related operators"
+        , 82: "Machine operators and assemblers"
+        , 83: "Drivers and mobile plant operators"
+        , 91: "Sales and services elementary occupations"
+        , 92: "Agricultural, fishery and related labourers"
+        , 93: "Labourers in mining, construction, manufacturing and transport" }
 
 # Read the HILDA data one way or another.
 if os.path.exists(hilda_spss_path):
@@ -321,5 +291,37 @@ h25x500 = hilda25.sample(n=500, axis='columns', random_state=11)
 # Below subset contains 'tjbmsall':
 h100x300 = hilda100.sample(n=300, axis='columns', random_state=99)
 h100x300_2 = hilda100.sample(n=300, axis='columns', random_state=9999)
+
+# All the ISCO88 codes with rows in HILDA.
+iscosraw = [ int(code) for code in hilda['tjbm682'].unique() ]
+
+# Subsetting.
+iscos = [ (isco, hilda[hilda['tjbm682'] == isco].shape[0]) for isco in iscosraw
+          if isco not in [1, 34] # Dubious category (1) and +10k rows (34).
+        #  if isco % 10 != 0      # Not sure whether to include.
+        ]
+
+# ISCO codes with 100 or more rows.
+iscover100 = [ isco[0] for isco in iscos if isco[1] > 99 ]
+
+def hilda_by_isco(isco):
+    """Get by 2 digit code if `isco` like 21. By 1 digit code if like 2."""
+    # Get available iscos - excluding ISCO1 and ISCO34 (dubious or too many).
+    iscos = [ int(code) for code in hilda['tjbm682'].unique()
+              if int(code) not in [1, 34] ]
+    # Inline convenience lookup functions.
+    def hilda_by_isco2d(isco_2d): return hilda[hilda['tjbm682'] == isco_2d]
+    def first(x): return (x - x % 10) // 10
+
+    # If a 2-digit code is requested.
+    if isco > 9:
+        return hilda_by_isco2d(isco)
+    # If a 1-digit code is requested.
+    else:
+        return pd.concat([ hilda[hilda['tjbm682'] == code]
+                           for code in iscos if first(code) == isco ])
+
+
+
 
 if __name__ == '__main__': pass
