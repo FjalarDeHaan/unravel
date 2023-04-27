@@ -10,6 +10,7 @@
 from unravel import *
 from unravel.hilda import *
 
+import multiprocessing
 
 def cli_args():
     """Parse `argv` interpreter-agnostically. Return non-trivial arguments."""
@@ -93,9 +94,9 @@ def run_isco(algo='GIES', isco=None):
         print("Getting candidate causes and effects.")
         cs = candidates(bcols, h)
         print("Discovering causal graph.")
-        g = algos[algo].predict(cs + bcols)
+        g = algos[algo].predict(h[cs + bcols])
         # Write the causal graph to a pickle.
-        pname = "graph-isco" + isco + ".pickle"
+        pname = "graph-isco" + str(isco) + ".pickle"
         with open(pname, "wb") as f:
             print("Writing causal graph to %s." % pname)
             pickle.dump(g, f)
@@ -113,6 +114,14 @@ def run_stratified(algo='GIES', iscos=iscover100):
     with open("graphs-by-isco-dict.pickle", "wb") as f: pickle.dump(d, f)
     return d
 
+def run_stratified_parallel(algo='GIES', iscos=iscover100):
+    # Set up the multiprocessing facilities.
+    pool = multiprocessing.Pool()
+    # Collect the multiprocessing pre-results.
+    d = { isco: pool.apply_async(run_isco, (algo, isco)) for isco in iscos }
+    # Then extract the actual causal graphs and return them.
+    return { isco: d[isco].get() for isco in iscos }
+
 
 if __name__ == '__main__':
     args = cli_args()
@@ -124,8 +133,6 @@ if __name__ == '__main__':
             # bs = blankets(hilda, list(cols.keys()), parallel=True)
             with open("blankets.pickle", "wb") as f: pickle.dump(bs, f)
         else:
-            run_stratified(args[0])
+            run_stratified_parallel(args[0])
     else:
         pass
-        # load_analysis()
-
