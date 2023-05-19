@@ -89,7 +89,7 @@ def run_isco(algo='GIES', isco=None):
     if isco is None:
         print("Error: ISCO code not provided.")
     else:
-        print("Subsetting HILDA to ISCO code %i" % isco)
+        print("Subsetting HILDA to ISCO code %i." % isco)
         h = hilda_by_isco(isco)
         print("Getting candidate causes and effects.")
         cs = candidates(bcols, h)
@@ -121,6 +121,28 @@ def run_stratified_parallel(algo='GIES', iscos=iscover100):
     d = { isco: pool.apply_async(run_isco, (algo, isco)) for isco in iscos }
     # Then extract the actual causal graphs and return them.
     return { isco: d[isco].get() for isco in iscos }
+
+def run_isco_colsampled(algo='GIES', isco=None, ncols=10, niters=10):
+    if isco is None:
+        print("Error: ISCO code not provided.")
+    else:
+        print("Subsetting HILDA to ISCO code %i." % isco)
+        h = hilda_by_isco(isco)
+        gs = []
+        i = 0
+        while len(gs) < niters:
+            hsample = h.sample(n=ncols, axis=1, random_state=i)
+            if 'ujbmsall' in hsample:
+                print("Discovering causal graph number %i." % len(gs))
+                g = algos[algo].predict(hsample)
+                gs.append(g)
+                print("Appended graph.")
+            i += 1
+        composition = gs[0]
+        for g in gs[1:]:
+            composition = nx.compose(composition, g)
+
+        return gs, composition
 
 
 if __name__ == '__main__':

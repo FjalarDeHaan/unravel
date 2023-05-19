@@ -4,7 +4,7 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2022-09-12
-# Last modified: 2023-04-25
+# Last modified: 2023-05-05
 #
 
 import pickle, os
@@ -16,9 +16,11 @@ import pyreadstat
 # Path strings to 20th ('t') wave of HILDA data set.
 project_path = ( "/home/fjalar/pCloudDrive/"
                  "archive/academia/projects/future-of-work/" )
-hilda_spss_path = "/server/data/hilda/spss-200c/Combined t200c.sav"
-hilda_pickle_path = project_path + "data/hilda/hilda-combined-t200c.pickle"
-raw_pickle_path = project_path + "data/hilda/hilda-combined-t200c-raw.pickle"
+# hilda_spss_path = "/server/data/hilda2020/spss-200c/Combined t200c.sav"
+# hilda_spss_path = "/server/data/hilda2021/spss-210c/Combined u210c.sav"
+hilda_spss_path = project_path+"data/hilda2021/spss-210c/Combined u210c.sav"
+hilda_pickle_path = project_path+"data/hilda2020/hilda-combined-t200c.pickle"
+raw_pickle_path = project_path+"data/hilda2020/hilda-combined-t200c-raw.pickle"
 
 def clean(raw, fill='mode'):
     """Clean HILDA data."""
@@ -57,190 +59,190 @@ def stats(data):
     df.loc["std"] = data.std()
     return df
 
-jcols = { 'tlosatsf': 'Life satisfaction level'
-        , 'tjbhruc': 'Combined per week usually worked in all jobs'
-        , 'thiwsfei': 'Imputed financial year gross wages and salary'
-        , 'tedhists': 'highest level of education'
-        , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
+jcols = { 'ulosatsf': 'Life satisfaction level'
+        , 'ujbhruc': 'Combined per week usually worked in all jobs'
+        , 'uhiwsfei': 'Imputed financial year gross wages and salary'
+        , 'uedhists': 'highest level of education'
+        , 'uhhda10': 'SEIFA decile of socio-economic disadvantage'
         }
 
 fcols = { # Basic demographics.
-          'thgage': 'DV Age last birthday at June 30'
-        , 'thgsex': 'Sex'
-        , 'tmrcurr': 'Marital status'
-        , 'tedhigh1': 'Highest education level achieved'
-        , 'tedlhqn': 'Highest education level'
-        , 'tes': 'Employment  status'
-        , 'thhda10': 'SEIFA decile of socio-economic disadvantage'
+          'uhgage': 'DV Age last birthday at June 30'
+        , 'uhgsex': 'Sex'
+        , 'umrcurr': 'Marital status'
+        , 'uedhigh1': 'Highest education level achieved'
+        # , 'uedlhqn': 'Highest education level' # Not in Wave 21.
+        , 'ues': 'Employment  status'
+        , 'uhhda10': 'SEIFA decile of socio-economic disadvantage'
           # Work-related factors.
-        , 'tjbmsall': 'Overall job satisfaction'
-        , 'tjbmsflx': 'Flexibility to balance work/life satisfaction'
-        , 'tesdtl': 'Labour force status detailed'
-        , 'tjbmshrs': 'Hours working satisfaction'
-        , 'twscei': 'Current gross weekly income'
-        , 'twsfei': 'Financial year gross income'
-        , 'tjbmspay': 'Total pay satisfaction'
-        , 'tjbmhruc': 'Hours per week in main job'
-        , 'tjbhruc': 'Hours per week in all jobs'
-        , 'tjbhrcpr': 'Preference to work fewer/same/more hours'
-        , 'tjbmssec': 'Job security satisfaction'
-        , 'tjbmswrk': 'Work itself satisfaction'
-        , 'tlosateo': 'Employment opportunities satisfaction'
-        , 'tjbmo62': 'Occupation code 2-digit ANZSCO'
-        , 'tjbmcnt': 'Employment contract (current job)'
-        , 'tjbmh': 'Any usual working hours worked from home'
-        , 'tjbmlha': 'Main job location varies'
-        # (Not in index) , 'tjbmlkm': 'Main job location distance from home'
+        , 'ujbmsall': 'Overall job satisfaction'
+        , 'ujbmsflx': 'Flexibility to balance work/life satisfaction'
+        , 'uesdtl': 'Labour force status detailed'
+        , 'ujbmshrs': 'Hours working satisfaction'
+        , 'uwscei': 'Current gross weekly income'
+        , 'uwsfei': 'Financial year gross income'
+        , 'ujbmspay': 'Total pay satisfaction'
+        , 'ujbmhruc': 'Hours per week in main job'
+        , 'ujbhruc': 'Hours per week in all jobs'
+        , 'ujbhrcpr': 'Preference to work fewer/same/more hours'
+        , 'ujbmssec': 'Job security satisfaction'
+        , 'ujbmswrk': 'Work itself satisfaction'
+        , 'ulosateo': 'Employment opportunities satisfaction'
+        , 'ujbmo62': 'Occupation code 2-digit ANZSCO'
+        , 'ujbmcnt': 'Employment contract (current job)'
+        , 'ujbmh': 'Any usual working hours worked from home'
+        , 'ujbmlha': 'Main job location varies'
+        # (Not in index) , 'ujbmlkm': 'Main job location distance from home'
           # Health-related factors.
-        , 'tlosatyh': 'Health satisfaction'
-        , 'tgh1': 'Self-assessed health'
-        , 'tghgh': 'SF-36 general health'
-        , 'tghmh': 'SF-36 mental health'
-        , 'tjomms': 'Job is more stressful than I had ever imagined'
-        , 'tlosat': 'Life satisfaction'
+        , 'ulosatyh': 'Health satisfaction'
+        , 'ugh1': 'Self-assessed health'
+        , 'ughgh': 'SF-36 general health'
+        , 'ughmh': 'SF-36 mental health'
+        , 'ujomms': 'Job is more stressful than I had ever imagined'
+        , 'ulosat': 'Life satisfaction'
         }
 
 cols = {
-       # 'thgage': 'Age (approx.)'
-       # , 'thgsex': 'Sex'
-       # , 'tmrcurr': 'Marital status'
-       # , 'tedhigh1': 'Highest education level achieved'
-       # , 'tes': 'Employment  status'
-        'thhda10': 'SEIFA decile of socio-economic disadvantage'
-       , 'tjbmsall': 'Overall job satisfaction'
-       , 'tghmh': 'SF-36 mental health'
+       # 'uhgage': 'Age (approx.)'
+       # , 'uhgsex': 'Sex'
+       # , 'umrcurr': 'Marital status'
+       # , 'uedhigh1': 'Highest education level achieved'
+       # , 'ues': 'Employment  status'
+        'uhhda10': 'SEIFA decile of socio-economic disadvantage'
+       , 'ujbmsall': 'Overall job satisfaction'
+       , 'ughmh': 'SF-36 mental health'
        }
 
-bcols = [ 'tjomus'
-        , 'tskcjed'
-        , 'tjomcd'
-        , 'tjomfast'
-        , 'tjomms'
-        , 'tjompi'
-        , 'tjomtime'
-        , 'tjomwi'
-        , 'tjbempt'
-        # , 'tjbmcntr' # Only in Wave 1.
-        , 'tjbmploj'
-        , 'tjbmssec'
-        , 'tjbocct'
-        , 'tjomsf'
-        , 'tjomwf'
-        , 'tlosateo'
-        # , 'tjoskill' # Only in Wave 5.
-        , 'tjomns'
-        , 'tjomls'
-        , 'tjomini'
-        , 'tjowpcc'
-        # , 'tjowpcr' # Only in  1 < Wave < 20.
-        , 'tjowpptw'
-        # , 'tjowpuml' # Only in 1 < Wave < 11.
-        , 'tjowppml'
-        # , 'tjowppnl' # Only in 1 < Wave < 11.
-        , 'tjompf'
-        , 'twscei'
-        , 'twscg'
-        , 'twsfei'
-        , 'twsfes'
-        , 'tjbmswrk'
-        # , 'tjonomfl' # Only in Wave 5.
-        # , 'tjoserve' # Only in Wave 5.
-        # , 'tjosoc' # Only in Wave 5.
-        # , 'tjosat' # Only in Wave 5.
-        , 'tjbmsall'
-        # , 'tjostat' # Only in Wave 5.
-        # , 'tjonovil' # Only in Wave 5.
-        , 'tjomdw'
-        , 'tjomrpt'
-        , 'tjomvar'
-        , 'tjbmagh'
-        , 'tjbmh'
-        , 'tjbmhl'
-        # , 'tjbmhrh' # Only in Wave 1.
-        # , 'tjbmhrha' # Not enough rows, drops out after sampling.
-        , 'tjbmhruc'
-        , 'tjbmsl'
-        , 'tjowpfx'
-        , 'tjowphbw'
-        , 'tjombrk'
-        , 'tjomdw'
-        , 'tjomfd'
-        , 'tjomflex'
-        , 'tjomfw'
-        # , 'tjbtremp' # Only in 2 <Wave < 7
-        , 'tjbmsflx'
-        , 'tjbhruc'
-        # , 'tjbhru' # Only in Wave 1.
-        # , 'tjbmhruw' # Not enough rows, drops out after sampling.
-        # , 'tatwkhpj' # Only in Wave 1.
-        , 'tlosat'
-        , 'tjbmshrs'
-        , 'tjbmspay'
-        , 'tlosatfs'
-        , 'tlosatft'
-        , 'tjbnewjs'
-        , 'tjompi'
-        , 'tlosatyh' ]
+bcols = [ 'ujomus'
+        # , 'uskcjed' # Not in Wave 21.
+        , 'ujomcd'
+        , 'ujomfast'
+        , 'ujomms'
+        , 'ujompi'
+        , 'ujomtime'
+        , 'ujomwi'
+        , 'ujbempt'
+        # , 'ujbmcntr' # Only in Wave 1.
+        , 'ujbmploj'
+        , 'ujbmssec'
+        , 'ujbocct'
+        , 'ujomsf'
+        , 'ujomwf'
+        , 'ulosateo'
+        # , 'ujoskill' # Only in Wave 5.
+        , 'ujomns'
+        , 'ujomls'
+        , 'ujomini'
+        , 'ujowpcc'
+        # , 'ujowpcr' # Only in  1 < Wave < 20.
+        , 'ujowpptw'
+        # , 'ujowpuml' # Only in 1 < Wave < 11.
+        , 'ujowppml'
+        # , 'ujowppnl' # Only in 1 < Wave < 11.
+        , 'ujompf'
+        , 'uwscei'
+        , 'uwscg'
+        , 'uwsfei'
+        , 'uwsfes'
+        , 'ujbmswrk'
+        # , 'ujonomfl' # Only in Wave 5.
+        # , 'ujoserve' # Only in Wave 5.
+        # , 'ujosoc' # Only in Wave 5.
+        # , 'ujosat' # Only in Wave 5.
+        , 'ujbmsall'
+        # , 'ujostat' # Only in Wave 5.
+        # , 'ujonovil' # Only in Wave 5.
+        , 'ujomdw'
+        , 'ujomrpt'
+        , 'ujomvar'
+        , 'ujbmagh'
+        , 'ujbmh'
+        , 'ujbmhl'
+        # , 'ujbmhrh' # Only in Wave 1.
+        # , 'ujbmhrha' # Not enough rows, drops out after sampling.
+        , 'ujbmhruc'
+        , 'ujbmsl'
+        , 'ujowpfx'
+        , 'ujowphbw'
+        , 'ujombrk'
+        , 'ujomdw'
+        , 'ujomfd'
+        , 'ujomflex'
+        , 'ujomfw'
+        # , 'ujbtremp' # Only in 2 <Wave < 7
+        , 'ujbmsflx'
+        , 'ujbhruc'
+        # , 'ujbhru' # Only in Wave 1.
+        # , 'ujbmhruw' # Not enough rows, drops out after sampling.
+        # , 'uatwkhpj' # Only in Wave 1.
+        , 'ulosat'
+        , 'ujbmshrs'
+        , 'ujbmspay'
+        , 'ulosatfs'
+        , 'ulosatft'
+        , 'ujbnewjs'
+        , 'ujompi'
+        , 'ulosatyh' ]
 
-contractions = { 'authority': ['tjomls']
-               , 'autonomy': ['tjomini']
-               , 'career and skill development (growth)': [ 'tjoskill'
-                                                          , 'tjomns']
-               , 'career opportunities': ['tlosateo']
-               , 'flexible work practices': [ 'tjbmagh'
-                                            , 'tjbmh'
-                                            , 'tjbmhl'
-                                            , 'tjbmhrh'
-                                            , 'tjbmhrha'
-                                            , 'tjbmhruc'
-                                            , 'tjbmsl'
-                                            , 'tjowpfx'
-                                            , 'tjowphbw'
-                                            , 'tjombrk'
-                                            , 'tjomdw'
-                                            , 'tjomfd'
-                                            , 'tjomflex'
-                                            , 'tjomfw' ]
-               , 'income': [ 'tjowppml'
-                           , 'tjowppnl'
-                           , 'tjompf'
-                           , 'twscei'
-                           , 'twscg'
-                           , 'twsfei'
-                           , 'twsfes' ]
-               , 'job attitudes': [ 'tjbmshrs'
-                                  , 'tjbmspay'
-                                  , 'tlosatfs'
-                                  , 'tlosatft' ]
-               , 'job demand (stress)': [ 'tjomcd'
-                                        , 'tjomfast'
-                                        , 'tjomms'
-                                        , 'tjompi'
-                                        , 'tjomtime'
-                                        , 'tjomwi' ]
-               , 'job resources': [ 'tjowpcc'
-                                  , 'tjowpcr'
-                                  , 'tjowpptw'
-                                  , 'tjowpuml' ]
-               , 'job-satisfaction': ['tjosat', 'tjbmsall']
-               , 'life satisfaction': ['tatwkhpj', 'tlosat']
-               , 'long term employment and job security': [ 'tjbempt'
-                                                          , 'tjbmcntr'
-                                                          , 'tjbmploj'
-                                                          , 'tjbmssec'
-                                                          , 'tjbocct'
-                                                          , 'tjomsf'
-                                                          , 'tjomwf' ]
-               , 'recognition': ['tjostat']
-               , 'skill-job fit': ['tjomus', 'tskcjed']
-               , 'communication with co-workers': ['tjosoc']
-               , 'turnover intentions': ['tjbnewjs']
-               , 'variety': ['tjonovil', 'tjomdw', 'tjomrpt', 'tjomvar']
-               , 'well being (mental and physical)': ['tjompi', 'tlosatyh']
-               , 'work engagement': ['tjbmswrk', 'tjonomfl', 'tjoserve']
-               , 'work-life balance': ['tjbmsflx']
-               , 'working hours': ['tjbhruc', 'tjbhru', 'tjbmhruw']
-               , 'workplace training satisfaction': ['tjbtremp']
+contractions = { 'authority': ['ujomls']
+               , 'autonomy': ['ujomini']
+               , 'career and skill development (growth)': [ 'ujoskill'
+                                                          , 'ujomns']
+               , 'career opportunities': ['ulosateo']
+               , 'flexible work practices': [ 'ujbmagh'
+                                            , 'ujbmh'
+                                            , 'ujbmhl'
+                                            , 'ujbmhrh'
+                                            , 'ujbmhrha'
+                                            , 'ujbmhruc'
+                                            , 'ujbmsl'
+                                            , 'ujowpfx'
+                                            , 'ujowphbw'
+                                            , 'ujombrk'
+                                            , 'ujomdw'
+                                            , 'ujomfd'
+                                            , 'ujomflex'
+                                            , 'ujomfw' ]
+               , 'income': [ 'ujowppml'
+                           , 'ujowppnl'
+                           , 'ujompf'
+                           , 'uwscei'
+                           , 'uwscg'
+                           , 'uwsfei'
+                           , 'uwsfes' ]
+               , 'job attitudes': [ 'ujbmshrs'
+                                  , 'ujbmspay'
+                                  , 'ulosatfs'
+                                  , 'ulosatft' ]
+               , 'job demand (stress)': [ 'ujomcd'
+                                        , 'ujomfast'
+                                        , 'ujomms'
+                                        , 'ujompi'
+                                        , 'ujomtime'
+                                        , 'ujomwi' ]
+               , 'job resources': [ 'ujowpcc'
+                                  , 'ujowpcr'
+                                  , 'ujowpptw'
+                                  , 'ujowpuml' ]
+               , 'job-satisfaction': ['ujosat', 'ujbmsall']
+               , 'life satisfaction': ['uatwkhpj', 'ulosat']
+               , 'long term employment and job security': [ 'ujbempt'
+                                                          , 'ujbmcntr'
+                                                          , 'ujbmploj'
+                                                          , 'ujbmssec'
+                                                          , 'ujbocct'
+                                                          , 'ujomsf'
+                                                          , 'ujomwf' ]
+               , 'recognition': ['ujostat']
+               , 'skill-job fit': ['ujomus', 'uskcjed']
+               , 'communication with co-workers': ['ujosoc']
+               , 'uurnover intentions': ['ujbnewjs']
+               , 'variety': ['ujonovil', 'ujomdw', 'ujomrpt', 'ujomvar']
+               , 'well being (mental and physical)': ['ujompi', 'ulosatyh']
+               , 'work engagement': ['ujbmswrk', 'ujonomfl', 'ujoserve']
+               , 'work-life balance': ['ujbmsflx']
+               , 'working hours': ['ujbhruc', 'ujbhru', 'ujbmhruw']
+               , 'workplace training satisfaction': ['ujbtremp']
                }
 ISCO88 ={ 11: "Legislators and senior officials"
         , 12: "Corporate managers"
@@ -288,15 +290,15 @@ hilda1k = clean(raw.sample(n=1000, random_state=999))
 hilda100 = clean(raw.sample(n=100, random_state=999))
 hilda25 = clean(raw.sample(n=25, random_state=999))
 h25x500 = hilda25.sample(n=500, axis='columns', random_state=11)
-# Below subset contains 'tjbmsall':
+# Below subset contains 'ujbmsall':
 h100x300 = hilda100.sample(n=300, axis='columns', random_state=99)
 h100x300_2 = hilda100.sample(n=300, axis='columns', random_state=9999)
 
 # All the ISCO88 codes with rows in HILDA.
-iscosraw = [ int(code) for code in hilda['tjbm682'].unique() ]
+iscosraw = [ int(code) for code in hilda['ujbm682'].unique() ]
 
 # Subsetting.
-iscos = [ (isco, hilda[hilda['tjbm682'] == isco].shape[0]) for isco in iscosraw
+iscos = [ (isco, hilda[hilda['ujbm682'] == isco].shape[0]) for isco in iscosraw
           if isco not in [1, 34] # Dubious category (1) and +10k rows (34).
         #  if isco % 10 != 0      # Not sure whether to include.
         ]
@@ -307,10 +309,10 @@ iscover100 = [ isco[0] for isco in iscos if isco[1] > 99 ]
 def hilda_by_isco(isco):
     """Get by 2 digit code if `isco` like 21. By 1 digit code if like 2."""
     # Get available iscos - excluding ISCO1 and ISCO34 (dubious or too many).
-    iscos = [ int(code) for code in hilda['tjbm682'].unique()
+    iscos = [ int(code) for code in hilda['ujbm682'].unique()
               if int(code) not in [1, 34] ]
     # Inline convenience lookup functions.
-    def hilda_by_isco2d(isco_2d): return hilda[hilda['tjbm682'] == isco_2d]
+    def hilda_by_isco2d(isco_2d): return hilda[hilda['ujbm682'] == isco_2d]
     def first(x): return (x - x % 10) // 10
 
     # If a 2-digit code is requested.
@@ -318,7 +320,7 @@ def hilda_by_isco(isco):
         return hilda_by_isco2d(isco)
     # If a 1-digit code is requested.
     else:
-        return pd.concat([ hilda[hilda['tjbm682'] == code]
+        return pd.concat([ hilda[hilda['ujbm682'] == code]
                            for code in iscos if first(code) == isco ])
 
 

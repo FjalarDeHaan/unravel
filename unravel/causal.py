@@ -29,7 +29,7 @@ anm = cdt.causality.pairwise.ANM()
 
 # Instantiate all graph-based algorithms.
 algorithms = [ cdt.causality.graph.CAM()
-             , cdt.causality.graph.CCDr()
+             # , cdt.causality.graph.CCDr()
              , cdt.causality.graph.GES()
              , cdt.causality.graph.GIES()
              , cdt.causality.graph.LiNGAM()
