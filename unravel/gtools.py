@@ -42,6 +42,26 @@ def contract(graph, vertices, label=None):
     clean_edge_props(graph)
     return graph
 
+def partrand(cs, n, var=None):
+    """Return random partition of `cs` as list of lists of size `n`."""
+    cs = list(cs)
+    random.shuffle(cs)
+    partition = [ cs[i:i+n] for i in range(0, len(cs), n) ]
+    # If the last list is too small, merge it with the one before.
+    if len(partition[-1]) < n // 2:
+        merged = partition[-2] + partition[-1]
+        partition = partition[:-2]
+        partition.append(merged)
+    # If only a partition is wanted, all is done.
+    if var is None:
+        return partition
+    # Otherwise make sure all parts contain `var`.
+    else:
+        for part in partition:
+            if var not in part:
+                part.append(var)
+        return partition
+
 def markov_blanket(graph, vertex):
     if nx.is_directed(graph):
         parents = list(graph.predecessors(vertex))

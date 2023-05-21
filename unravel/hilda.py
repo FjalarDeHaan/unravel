@@ -11,6 +11,7 @@ import pickle, os
 
 import numpy as np
 import pandas as pd
+import networkx as nx
 import pyreadstat
 
 # Path strings to 20th ('t') wave of HILDA data set.
@@ -323,7 +324,13 @@ def hilda_by_isco(isco):
         return pd.concat([ hilda[hilda['ujbm682'] == code]
                            for code in iscos if first(code) == isco ])
 
+def labeldict(g):
+    """Return hildavar to label dictionary for the vertices in `g`."""
+    return { col: meta.column_names_to_labels[col] for col in g.nodes() }
 
+def label(g):
+    """Return labelled version of HILDA-based graph."""
+    return nx.relabel_nodes(g, labeldict(g))
 
 
 if __name__ == '__main__': pass

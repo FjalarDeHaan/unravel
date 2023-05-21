@@ -4,10 +4,10 @@
 #
 # Author: Fjalar de Haan (fjalar.dehaan@unimelb.edu.au)
 # Created: 2023-02-14
-# Last modified: 2023-03-08
+# Last modified: 2023-05-21
 #
 
-import pickle, os, multiprocessing, copy
+import pickle, os, multiprocessing, copy, random
 
 import cdt
 from cdt.metrics import SHD, SID
@@ -18,6 +18,7 @@ import networkx as nx
 import pandas as pd
 import numpy as np
 
+from .gtools import markov_blanket
 
 glasso = cdt.independence.graph.Glasso()
 
@@ -39,8 +40,40 @@ algorithms = [ cdt.causality.graph.CAM()
 algos = { str(algo).split(sep='.')[3]: algo for algo in algorithms }
 nalgos = len(algos)
 
-"""Return candidate causes/effects for `variables` in `data`."""
+def partrand(cs, n, var=None):
+    """Return random partition of `cs` as list of lists of size `n`."""
+    cs = list(cs)
+    random.shuffle(cs)
+    partition = [ cs[i:i+n] for i in range(0, len(cs), n) ]
+    # If the last list is too small, merge it with the one before.
+    if len(partition[-1]) < n // 2:
+        merged = partition[-2] + partition[-1]
+        partition = partition[:-2]
+        partition.append(merged)
+    # If only a partition is wanted, all is done.
+    if var is None:
+        return partition
+    # Otherwise make sure all parts contain `var`.
+    else:
+        for part in partition:
+            if var not in part:
+                part.append(var)
+        return partition
+
+def blanketsbychunks(data, algo='GIES', target='ujbmsall', chunksize=100):
+    # First partition the set of variables into lists of size `chunksize`.
+    partition = partrand(data.columns, chunksize, target)
+    # Return the list of Markov blankets for each chunk of `data`.
+    blankets = []
+    for i, part in enumerate(partition):
+        print("Computing blanket number %i." % i)
+        blankets.append(markov_blanket(algos[algo].predict(data[part]), target))
+    # return [ markov_blanket(algos[algo].predict(data[part]), target )
+             # for part in partition ]
+    return blankets
+
 def candidates(variables, data, algo=anm, threshold=.1):
+    """Return candidate causes/effects for `variables` in `data`."""
     # In case of single variable, put it in a list anyway.
     if type(variables) != list:
         variables = [variables]
