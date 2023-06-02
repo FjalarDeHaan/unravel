@@ -84,6 +84,7 @@ def candidates(variables, data, algo=anm, threshold=.1):
         score = 0 # Start afresh with each new variable.
         for i in range(data.shape[1]):
             score = algo.predict_proba((data[variable], data.iloc[:, i]))
+            print(i, score)
             found = abs(score) < 1.5 and abs(score) > threshold
             if found:                              # If a candidate is found...
                 candidates.append(data.columns[i]) # ... add it to the list.
