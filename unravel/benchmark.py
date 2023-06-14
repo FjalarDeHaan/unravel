@@ -67,9 +67,10 @@ def precision(trial, truth, average=True):
         score += sum([ trial.has_edge(*edge)
                        for edge in truth.out_edges(vertex) ])
         # Compute the precision.
-        if score == 0 and trial.degree(vertex) == 0:
-            ds[vertex] = 1.0
-        else:
+        # TODO: Check the below --- trial.degree?!
+        # if score == 0 and trial.degree(vertex) == 0:
+            # ds[vertex] = 1.0
+        if score > 0:
             ds[vertex] = score / trial.degree(vertex)
     # Deliver.
     if average:
@@ -113,7 +114,7 @@ def rel_edge_error(trial, truth):
                    )
     return average, stddev
 
-def benchmark( algo
+def benchmark( algo # Pass either a string or an actual, instantiated algo.
              , nvertices
              , nrows
              , iterations=11
@@ -122,24 +123,130 @@ def benchmark( algo
     """Compute a suite of benchmarks."""
     # Prepare a metric->score dictionary.
     benchmarks = {}
+    # Initialise variables.
+    prc =  rec = vhd = shd = sid = 0.0
     # Iterate to get credible statistics.
-    prc = 0.0
-    rec = 0.0
-    vhd = 0.0
     for i in range(iterations):
-        generator = DAG(mechanism, noise=noise, nodes=nvertices, npoints=nrows)
-        data, truth = generator.generate()
+        data, truth = generate( mechanism
+                              , noise=noise
+                              , nvertices=nvertices
+                              , nrows=nrows)
         print("Discovering causal graph for iteration %i." % i)
-        trial = algos[algo].predict(data)
+        if type(algo) == str:
+            trial = algos[algo].predict(data)
+        else:
+            trial = algo.predict(data)
+        # Calculate the statistics.
         prc += precision(trial, truth)
         rec += recall(trial, truth)
         vhd += VHD(trial, truth)
+        shd += SHD(trial, truth)
+        sid += SID(trial, truth)
+    # Do the averaging.
     benchmarks["precision"] = prc / iterations
     benchmarks["recall"] = rec / iterations
     benchmarks["VHD"] = vhd / iterations
-    benchmarks["SHD"] = SHD(trial, truth)
-    benchmarks["SID"] = SID(trial, truth)
+    benchmarks["SHD"] = shd / iterations
+    benchmarks["SID"] = sid / iterations
+    # Deliver.
     return benchmarks
+
+def bmarkinsect( algolist
+               , nvertices
+               , nrows
+               , iterations=11
+               , mechanism='linear'
+               , noise='gaussian'
+               , chunksize=None ):
+    """Compute a suite of benchmarks."""
+    # Prepare a metric->score dictionary.
+    benchmarks = {}
+    # Initialise variables.
+    prc =  rec = vhd = shd = sid = 0.0
+    # Prepare empty lists for graphs and datasets.
+    truths = []
+    datas = []
+    trials = []
+    # Iterate to get credible statistics.
+    for i in range(iterations):
+        data, truth = generate( mechanism
+                              , noise=noise
+                              , nvertices=nvertices
+                              , nrows=nrows)
+        print("Discovering causal graphs for iteration %i." % i)
+        trial = discover(algolist, data, chunksize)
+        # Archive the graphs and data.
+        truths.append(truth)
+        trials.append(trial)
+        datas.append(data)
+        # Calculate the statistics.
+        prc += precision(trial, truth)
+        rec += recall(trial, truth)
+        vhd += VHD(trial, truth)
+        shd += SHD(trial, truth)
+        sid += SID(trial, truth)
+    # Do the averaging.
+    benchmarks["precision"] = prc / iterations
+    benchmarks["recall"] = rec / iterations
+    benchmarks["VHD"] = vhd / iterations
+    benchmarks["SHD"] = shd / iterations
+    benchmarks["SID"] = sid / iterations
+    benchmarks["truths"] = truths
+    benchmarks["trials"] = trials
+    benchmarks["datas"] = datas
+    # Deliver.
+    return benchmarks
+
+def discover(algolist, data, chunksize=None):
+    # In case just one algo is passed, put it in a list anyway.
+    if type(algolist) == str: algolist = [algolist]
+    # Prepare an empty list to hold the discovered causal graphs' edges.
+    edgesets = []
+    # Add causal graphs returned by each algorithm.
+    for algo in algolist:
+        # Only do it chunkedly if asked and necessary.
+        if chunksize is None or chunksize >= data.shape[0]:
+            print("Running %s algorithm." % algo)
+            graph = algos[algo].predict(data)
+        else:
+            print("Running %s algorithm in chunks of %i." % ( algo
+                                                            , chunksize))
+            chunks = partrand(data.columns, chunksize)
+            graphs = [ algos[algo].predict(data[chunk]) for chunk in chunks ]
+            graph = nx.compose_all(graphs)
+        # Add the edgeset of the discovered graph to the list.
+        edgesets.append(graph.edges)
+    # Collect the intersection of the edge-sets.
+    sharededges = set.intersection(*map(set, edgesets))
+    # Construct the graph from the intersection.
+    graph = nx.DiGraph()
+    graph.add_nodes_from(data.columns)
+    graph.add_edges_from(sharededges)
+    # Deliver.
+    return graph
+
+def generate( mechanism='linear'
+            , noise='gaussian'
+            , nvertices=nvertices
+            , nrows=nrows ):
+    """Generate synthetic data and corresponding 'ground-truth' causal graph."""
+    generator = DAG(mechanism, noise=noise, nodes=nvertices, npoints=nrows)
+    data, truth = generator.generate()
+    return data, truth
+
+
+def tonetworkx(clgraph):
+    """Convert a Causal-Learn graph object to a NetworkX graph object."""
+    # Populate the internal NetworkX DiGraph object.
+    clgraph.to_nx_graph()
+    # Get it out of the Causal-Learn graph object.
+    g = clgraph.nx_graph
+    # Create a old label to new label dictionary.
+    d = { vertex: 'V' + str(vertex) for vertex in gprime.nodes() }
+    # Relabel and overwrite graph.
+    g = nx.relabel_nodes(g, d)
+    # Deliver.
+    return g
 
 
 
