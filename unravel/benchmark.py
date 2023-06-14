@@ -70,7 +70,7 @@ def precision(trial, truth, average=True):
         # TODO: Check the below --- trial.degree?!
         # if score == 0 and trial.degree(vertex) == 0:
             # ds[vertex] = 1.0
-        if score > 0:
+        if trial.degree(vertex) > 0:
             ds[vertex] = score / trial.degree(vertex)
     # Deliver.
     if average:
@@ -202,20 +202,24 @@ def discover(algolist, data, chunksize=None):
     if type(algolist) == str: algolist = [algolist]
     # Prepare an empty list to hold the discovered causal graphs' edges.
     edgesets = []
-    # Add causal graphs returned by each algorithm.
-    for algo in algolist:
-        # Only do it chunkedly if asked and necessary.
-        if chunksize is None or chunksize >= data.shape[0]:
+    # Only do it chunkedly if asked and necessary.
+    if chunksize is None or chunksize >= data.shape[0]:
+        # Add causal graphs returned by each algorithm.
+        for algo in algolist:
             print("Running %s algorithm." % algo)
             graph = algos[algo].predict(data)
-        else:
+            # Add the edgeset of the discovered graph to the list.
+            edgesets.append(graph.edges)
+    else:
+        # Add causal graphs returned by each algorithm.
+        for algo in algolist:
             print("Running %s algorithm in chunks of %i." % ( algo
                                                             , chunksize))
             chunks = partrand(data.columns, chunksize)
             graphs = [ algos[algo].predict(data[chunk]) for chunk in chunks ]
             graph = nx.compose_all(graphs)
-        # Add the edgeset of the discovered graph to the list.
-        edgesets.append(graph.edges)
+            # Add the edgeset of the discovered graph to the list.
+            edgesets.append(graph.edges)
     # Collect the intersection of the edge-sets.
     sharededges = set.intersection(*map(set, edgesets))
     # Construct the graph from the intersection.
