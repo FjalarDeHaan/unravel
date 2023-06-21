@@ -114,50 +114,15 @@ def rel_edge_error(trial, truth):
                    )
     return average, stddev
 
-def benchmark( algo # Pass either a string or an actual, instantiated algo.
-             , nvertices
-             , nrows
-             , iterations=11
-             , mechanism='linear'
-             , noise='gaussian' ):
-    """Compute a suite of benchmarks."""
-    # Prepare a metric->score dictionary.
-    benchmarks = {}
-    # Initialise variables.
-    prc =  rec = vhd = shd = sid = 0.0
-    # Iterate to get credible statistics.
-    for i in range(iterations):
-        data, truth = generate( mechanism
-                              , noise=noise
-                              , nvertices=nvertices
-                              , nrows=nrows)
-        print("Discovering causal graph for iteration %i." % i)
-        if type(algo) == str:
-            trial = algos[algo].predict(data)
-        else:
-            trial = algo.predict(data)
-        # Calculate the statistics.
-        prc += precision(trial, truth)
-        rec += recall(trial, truth)
-        vhd += VHD(trial, truth)
-        shd += SHD(trial, truth)
-        sid += SID(trial, truth)
-    # Do the averaging.
-    benchmarks["precision"] = prc / iterations
-    benchmarks["recall"] = rec / iterations
-    benchmarks["VHD"] = vhd / iterations
-    benchmarks["SHD"] = shd / iterations
-    benchmarks["SID"] = sid / iterations
-    # Deliver.
-    return benchmarks
-
-def bmarkinsect( algolist
-               , nvertices
-               , nrows
-               , iterations=11
-               , mechanism='linear'
-               , noise='gaussian'
-               , chunksize=None ):
+def benchmark( algolist            # The list (strings) of algorithms to use.
+             , nvertices           # How many vertices in the generated graphs.
+             , nrows               # How many rows of generated data.
+             , iterations=11       # Number of iterations to average over.
+             , mechanism='linear'  # Causal 'mechanism' to use.
+             , noise='gaussian'    # Distribution of the noise to use.
+             , chunksize=None      # Partition column set in chunks this size.
+             , target=None         # Focus on this variable.
+             , returndata=False ): # Also return truth/trial graphs and data.
     """Compute a suite of benchmarks."""
     # Prepare a metric->score dictionary.
     benchmarks = {}
@@ -173,15 +138,28 @@ def bmarkinsect( algolist
                               , noise=noise
                               , nvertices=nvertices
                               , nrows=nrows)
-        print("Discovering causal graphs for iteration %i." % i)
-        trial = discover(algolist, data, chunksize)
-        # Archive the graphs and data.
-        truths.append(truth)
-        trials.append(trial)
-        datas.append(data)
+        print("Discovering causal graphs for iteration %i." % i+1)
+        trial = discover(algolist, data, chunksize, target)
+        # Archive the graphs and data if asked.
+        if returndata:
+            truths.append(truth)
+            trials.append(trial)
+            datas.append(data)
         # Calculate the statistics.
-        prc += precision(trial, truth)
-        rec += recall(trial, truth)
+        if target is None:
+            prc += precision(trial, truth)
+            rec += recall(trial, truth)
+        else:
+            prc_dict = precision(trial, truth, average=False)
+            if target in prc_dict:
+                prc += prc_dict[target]
+            else:
+                prc -= 1000*iterations # TODO: Deal more elegantly with this.
+            rec_dict = recall(trial, truth, average=False)
+            if target in rec_dict:
+                rec += rec_dict[target]
+            else:
+                rec -= 1000*iterations # TODO: Deal more elegantly with this.
         vhd += VHD(trial, truth)
         shd += SHD(trial, truth)
         sid += SID(trial, truth)
@@ -191,13 +169,14 @@ def bmarkinsect( algolist
     benchmarks["VHD"] = vhd / iterations
     benchmarks["SHD"] = shd / iterations
     benchmarks["SID"] = sid / iterations
-    benchmarks["truths"] = truths
-    benchmarks["trials"] = trials
-    benchmarks["datas"] = datas
+    if returndata:
+        benchmarks["truths"] = truths
+        benchmarks["trials"] = trials
+        benchmarks["datas"] = datas
     # Deliver.
     return benchmarks
 
-def discover(algolist, data, chunksize=None):
+def discover(algolist, data, chunksize=None, target=None):
     # In case just one algo is passed, put it in a list anyway.
     if type(algolist) == str: algolist = [algolist]
     # Prepare an empty list to hold the discovered causal graphs' edges.
@@ -215,7 +194,7 @@ def discover(algolist, data, chunksize=None):
         for algo in algolist:
             print("Running %s algorithm in chunks of %i." % ( algo
                                                             , chunksize))
-            chunks = partrand(data.columns, chunksize)
+            chunks = partrand(data.columns, chunksize, var=target)
             graphs = [ algos[algo].predict(data[chunk]) for chunk in chunks ]
             graph = nx.compose_all(graphs)
             # Add the edgeset of the discovered graph to the list.
