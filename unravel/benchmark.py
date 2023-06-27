@@ -134,13 +134,14 @@ def benchmark( algolist            # The list (strings) of algorithms to use.
     trials = []
     # Iterate to get credible statistics.
     for i in range(iterations):
+        # Generate the random causal network.
         data, truth = generate( mechanism
                               , noise=noise
                               , nvertices=nvertices
                               , nrows=nrows)
         print("Discovering causal graphs for iteration %i." % i+1)
         trial = discover(algolist, data, chunksize, target)
-        # Archive the graphs and data if asked.
+        # Archive the graph and data if asked.
         if returndata:
             truths.append(truth)
             trials.append(trial)

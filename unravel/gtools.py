@@ -95,7 +95,7 @@ def causes(digraph, vertex):
 
 def effects(digraph, vertex):
     """Return subgraph induced by effects of `vertex` (out-Markov blanket)."""
-    children = digraph.successors(vertex)
+    children = list(digraph.successors(vertex))
     spouses = []
     for child in children:
         spouses += digraph.predecessors(child)
