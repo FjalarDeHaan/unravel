@@ -2,6 +2,7 @@ from unravel import *
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import FeatureAgglomeration
+from sklearn.cluster import DBSCAN
 import matplotlib.pyplot as plt
 import stopwords
 
@@ -27,19 +28,34 @@ data = pd.DataFrame( clustered
 # Cluster histogram.
 np.unique(clustering.labels_, return_counts=True)
 
-def cols_in_cluster(clusterindex):
+# def cols_in_cluster(clusterindex):
+    # return [ meta.column_names_to_labels[col]
+             # for col in h33.columns[np.where( clustering.labels_ == clusterindex
+                                            # , True
+                                            # , False )] ]
+# def vars_in_cluster(index):
+    # return [ col for col in h33.columns[np.where( clustering.labels_ == index
+                                                # , True
+                                                # , False )] ]
+
+def cols_in_cluster( data # Data set (pandas dataframe)
+                   , clustering # Clustering object.
+                   , index # Index of cluster to find columns of.
+                   ):
     return [ meta.column_names_to_labels[col]
-             for col in h33.columns[np.where( clustering.labels_ == clusterindex
-                                            , True
-                                            , False )] ]
-def vars_in_cluster(index):
-    return [ col for col in h33.columns[np.where( clustering.labels_ == index
-                                                , True
-                                                , False )] ]
+             for col in data.columns[np.where( clustering.labels_ == index
+                                             , True
+                                             , False )] ]
+def vars_in_cluster( data # Data set (pandas dataframe)
+                   , clustering # Clustering object.
+                   , index # Index of cluster to find columns of.
+                   ):
+    return [ col for col in data.columns[np.where( clustering.labels_ == index
+                                                 , True
+                                                 , False )] ]
 
-
-def text_in_cluster(index):
-    words = ' '.join(cols_in_cluster(index)).split()
+def text_in_cluster(data, clustering, index):
+    words = ' '.join(cols_in_cluster(data, clustering, index)).split()
     return [ word.lower() for word in words if word.isalpha() ]
 
 def keywords(text, n=10, returndict=False):
@@ -57,6 +73,7 @@ def keywords(text, n=10, returndict=False):
 def clusterkeywords(index, n=10, returndict=False):
     return keywords(text_in_cluster(index), n=n, returndict=returndict)
 
+
 if __name__ == "__main__":
     # Job satisfaction and its effects.
     'ujbmsall' in vars_in_cluster(27)
@@ -67,6 +84,13 @@ if __name__ == "__main__":
     vertices += vars_in_cluster(27)
     vertices += vars_in_cluster(35)
     vertices += vars_in_cluster(93)
+
+    # List of list of variables.
+    vertexlistoflists = [ vars_in_cluster(int(cluster[1:]))
+                          for cluster in subgraph(g, 'C27', depth=4).nodes() ]
+    vertices = [ vertex for sublist in vertexlistoflists for vertex in sublist ]
+
+
     h = discover(['PC', 'GES', 'CCDr'], hilda[vertices].sample(1000))
     [ meta.column_names_to_labels[var]
       for var in markov_blanket(h, 'ujbmsall').nodes() ]
