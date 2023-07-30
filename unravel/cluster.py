@@ -6,7 +6,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import OPTICS
 import matplotlib.pyplot as plt
 import stopwords
-import difflab
+import difflib
 
 def histplot(data):
     plt.hist(data, bins=data.max())
@@ -119,7 +119,7 @@ def clusterkeywords(index, n=10, returndict=False):
     return keywords(text_in_cluster(index), n=n, returndict=returndict)
 
 def dmatrix(labels):
-    A = np.zeros((len(labels), len(labels)))   
+    A = np.zeros((len(labels), len(labels)))
     for i in range(len(labels)):
         for j in range(1+i, len(labels)):
             A[i, j] = A[j, i] = dis(labels[i], labels[j])
@@ -140,11 +140,11 @@ if __name__ == "__main__":
                        , -1
                        , ( clusteringB.labels_
                          + clustering.labels_.max() )
-                       ) 
-        clustering.labels_[clustering.labels_ == -1] = mask 
+                       )
+        clustering.labels_[clustering.labels_ == -1] = mask
 
-    
-    
+
+
 
 
 
