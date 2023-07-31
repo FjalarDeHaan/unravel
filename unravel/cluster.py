@@ -7,16 +7,16 @@ from sklearn.cluster import OPTICS
 import matplotlib.pyplot as plt
 import stopwords
 import difflib
+import Levenshtein
 
 def histplot(data):
     plt.hist(data, bins=data.max())
     plt.show()
 
-def dis(s1, s2):
+def d(s1, s2):
     return 1 - difflib.SequenceMatcher( None
-                                      , s1.split()
-                                      , s2.split() ).ratio()
-
+                                      , s1.lower().split()
+                                      , s2.lower().split() ).ratio()
 
 def cull(data):
     cols = data.columns.to_list()
@@ -62,7 +62,6 @@ def cull(data):
     # 'Wave last interviewed' columns: 8
     cs14 = { col for col in cols
                  if 'Wave last interviewed' in meta.column_names_to_labels[col] }
-
     tocull = set.union( cs1, cs2, cs3, cs4, cs5
                       , cs6, cs7, cs8, cs9, cs10
                       , cs11, cs12, cs13, cs14
@@ -122,7 +121,7 @@ def dmatrix(labels):
     A = np.zeros((len(labels), len(labels)))
     for i in range(len(labels)):
         for j in range(1+i, len(labels)):
-            A[i, j] = A[j, i] = dis(labels[i], labels[j])
+            A[i, j] = A[j, i] = d(labels[i], labels[j])
     return A
 
 if __name__ == "__main__":
@@ -133,15 +132,39 @@ if __name__ == "__main__":
     A = dmatrix(labels)
     clustering = OPTICS(metric='precomputed').fit(A)
 
-    for i in range(10):
-        B = dmatrix(labels[clustering.labels_ == -1])
-        clusteringB = OPTICS(metric='precomputed').fit(B)
-        mask = np.where( clusteringB.labels_ == -1
-                       , -1
-                       , ( clusteringB.labels_
-                         + clustering.labels_.max() )
-                       )
-        clustering.labels_[clustering.labels_ == -1] = mask
+    clustersize = len(labels)
+    iteration = 1
+    while clustersize > 399:
+        # Find largest cluster.
+        bins, contents = np.unique(clustering.labels_, return_counts=True)
+        argmx = contents.argmax()
+        clusterindex = bins[argmx]     # Index of biggest cluster.
+        clustersize = contents[argmx]  # Size of biggest cluster.
+        lowestindex = bins.min()       # Lowest bin index, e.g. -1.
+        highestindex = bins.max()      # Highest bin index, e.g. 254.
+        print( "Largest cluster is %i, containing %i variables."
+             % (clusterindex, clustersize) )
+        print( "Recursively clustering largest cluster. Iteration: %i"
+             % iteration)
+        iteration += 1
+        B = dmatrix(labels[clustering.labels_ == clusterindex])
+        clusteringB = OPTICS( min_samples=2
+                            , metric='precomputed').fit(B)
+        # If only one cluster is found, report and break loop.
+        if np.unique(clusteringB.labels_).shape[0] == 1:
+            print("Only one cluster found. Nothing to be done.")
+            break
+        else:
+            # Outliers are different outliers than before, thus different bin.
+            mask = np.where( clusteringB.labels_ == -1
+                           , lowestindex - 1
+                           , clusteringB.labels_ )
+            # First bin (i.e. index zero) goes in previous bin, rest to end.
+            mask = np.where( mask == 0
+                           , clusterindex
+                           , highestindex + mask )
+            # Apply.
+            clustering.labels_[clustering.labels_ == clusterindex] = mask
 
 
 
