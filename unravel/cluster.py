@@ -1,5 +1,7 @@
 from unravel import *
 
+import numpy as np
+import random
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import FeatureAgglomeration
 from sklearn.cluster import DBSCAN
@@ -114,8 +116,9 @@ def keywords(text, n=10, returndict=False):
     if returndict: return d
     else: return list(d.keys())[:n]
 
-def clusterkeywords(index, n=10, returndict=False):
-    return keywords(text_in_cluster(index), n=n, returndict=returndict)
+def clusterkeywords(data, clustering, index, n=10, returndict=False):
+    return keywords( text_in_cluster(data, clustering, index)
+                   , n=n, returndict=returndict )
 
 def dmatrix(labels):
     A = np.zeros((len(labels), len(labels)))
@@ -124,11 +127,9 @@ def dmatrix(labels):
             A[i, j] = A[j, i] = d(labels[i], labels[j])
     return A
 
-if __name__ == "__main__":
-    h, _ = cull(hilda)
-    h33, _ = cull(hilda_by_isco(33))
+def cluster(data):
     labels = np.array( [ meta.column_names_to_labels[col]
-                         for col in h.columns ] )
+                         for col in data.columns ] )
     A = dmatrix(labels)
     clustering = OPTICS(metric='precomputed').fit(A)
 
@@ -165,6 +166,39 @@ if __name__ == "__main__":
                            , highestindex + mask )
             # Apply.
             clustering.labels_[clustering.labels_ == clusterindex] = mask
+    return clustering
+
+def sample_var_from_cluster(data, clustering, clusterindex):
+    vars = vars_in_cluster(data, clustering, clusterindex)
+    np.random.seed(9)
+    return np.random.choice(vars)
+
+def subset_from_clusters(data, clustering):
+    vars = []
+    indices = np.unique(clustering.labels_, return_counts=True)[0]
+    for i in indices:
+        vars.append(sample_var_from_cluster(data, clustering, i))
+    return data[vars]
+
+def keyphrases(stringlist):
+    pairs = [ (s1, s2) for s1 in stringlist
+                       for s2 in stringlist
+                       if s1 != s2 ]
+    matches = []
+    for pair in pairs:
+        s = difflib.SequenceMatcher(None, *pair)
+        blocks = s.tet_matching_blocks()
+        matching = [ pair[0][block.a:block.a+block.size].strip()
+                     for block in blocks ]
+        matches += matching
+    return sorted(set(matches), key=len, reverse=True)
+
+
+
+
+if __name__ == "__main__":
+    h, _ = cull(hilda)
+    h33, _ = cull(hilda_by_isco(33))
 
 
 
