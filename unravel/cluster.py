@@ -196,13 +196,21 @@ def keyphrases(stringlist):
                      for match in matching ]
         # Concatenate words to phrases.
         matching = [ " ".join(match) for match in matching ]
-        # Avoid repeated phrases.
+        # Remove empty phrases.
+        matching = [ match for match in matching if match != '' ]
+        # Avoid repeating phrases across match-sets.
         matching = [ match for match in matching if match not in matches ]
         # Add to the list.
         matches += matching
     return sorted(matches, key=len, reverse=True)
 
-def keyphrase(stringlist): return keyphrases(stringlist)[0]
+def keyphrase(stringlist):
+    if len(keyphrases(stringlist)) > 4:
+        return keyphrases(stringlist)[0]
+    else:
+        words = keywords(' '.join(stringlist).split())
+        words = [ word for word in words if word.isalpha() ]
+        return ' '.join(words)
 
 def discover_clustered( clustering
                       , algolist
