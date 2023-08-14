@@ -181,19 +181,50 @@ def subset_from_clusters(data, clustering):
     return data[vars]
 
 def keyphrases(stringlist):
-    pairs = [ (s1, s2) for s1 in stringlist
-                       for s2 in stringlist
-                       if s1 != s2 ]
+    pairs = [ (s1.lower().split(), s2.lower().split()) for s1 in stringlist
+                                                       for s2 in stringlist
+                                                       if s1 != s2 ]
     matches = []
     for pair in pairs:
+        # Distill the matching blocks of words.
         s = difflib.SequenceMatcher(None, *pair)
-        blocks = s.tet_matching_blocks()
-        matching = [ pair[0][block.a:block.a+block.size].strip()
+        blocks = s.get_matching_blocks()[:-1] # '-1' to exclude trivial match.
+        matching = [ pair[0][block.a:block.a+block.size]
                      for block in blocks ]
+        # Remove non-words.
+        matching = [ [ word for word in match if word.isalpha() ]
+                     for match in matching ]
+        # Concatenate words to phrases.
+        matching = [ " ".join(match) for match in matching ]
+        # Avoid repeated phrases.
+        matching = [ match for match in matching if match not in matches ]
+        # Add to the list.
         matches += matching
-    return sorted(set(matches), key=len, reverse=True)
+    return sorted(matches, key=len, reverse=True)
 
+def keyphrase(stringlist): return keyphrases(stringlist)[0]
 
+def discover_clustered( clustering
+                      , algolist
+                      , data
+                      , chunksize=None
+                      , target=None
+                      , seed = None ):
+    # Initialise the randomness.
+    if seed is None:
+        random.seed()
+    else:
+        random.seed(seed)
+    # Get labels and size of clusters.
+    indices, contents = np.unique(clustering.labels_, return_counts=True)
+    # Sample one variable per cluster and collect in dictionary with keyphrase.
+    variables = { random.choice(vars_in_cluster(data, clustering, index)):
+                  keyphrase(cols_in_cluster(data, clustering, index))
+                  for index in indices }
+    # Do causal discovery on `clustered' data, i.e. on subsetted data.
+    g = discover(algolist, data[variables.keys()], chunksize, target)
+    # Deliver.
+    return g, variables
 
 
 if __name__ == "__main__":
