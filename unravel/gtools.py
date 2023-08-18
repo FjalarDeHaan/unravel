@@ -77,6 +77,10 @@ def markov_blanket(graph, vertex):
             blanket += list(graph.neighbors(neighbour))
     return graph.subgraph(blanket)
 
+def markov_blankets(graph, vertices):
+    subgraphs = [ markov_blanket(graph, vertex) for vertex in vertices ]
+    return nx.compose_all(subgraphs)
+
 def ingraph(digraph, vertex):
     """Return subgraph induced by `vertex` and vertices adjacent _to_ it."""
     vertices = {vertex}
