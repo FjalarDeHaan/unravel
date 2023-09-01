@@ -139,7 +139,8 @@ def benchmark( algolist            # The list (strings) of algorithms to use.
                               , noise=noise
                               , nvertices=nvertices
                               , nrows=nrows)
-        print("Discovering causal graphs for iteration %i." % i+1)
+        j = i+1
+        print("Discovering causal graphs for iteration %i." % j)
         trial = discover(algolist, data, chunksize, target)
         # Archive the graph and data if asked.
         if returndata:
