@@ -185,6 +185,54 @@ bcols = [ 'ujomus'
         , 'ujompi'
         , 'ulosatyh' ]
 
+# Concepts and their HILDA variable representatives.
+concepts = { 'authority': ['ujomls']
+           , 'autonomy': ['ujomini']
+           , 'career and skill development (growth)': ['ujomns']
+           , 'career opportunities': ['ulosateo']
+           , 'flexible work practices': [ 'ujowphbw'
+                                        ,  'ujbmhruc'
+                                        ,  'ujomdw'
+                                        ,  'ujbmh'
+                                        ,  'ujbmhl'
+                                        ,  'ujomfd'
+                                        ,  'ujbmsl'
+                                        ,  'ujombrk'
+                                        ,  'ujowpfx'
+                                        ,  'ujbmagh'
+                                        ,  'ujbmhrha'
+                                        ,  'ujomfw'
+                                        ,  'ujomflex' ]
+           , 'income': [ 'ujowppml'
+                       , 'uwsfei'
+                       , 'ujompf'
+                       , 'uwsfes'
+                       , 'uwscei'
+                       , 'uwscg' ]
+           , 'job attitudes': ['ulosatfs', 'ulosatft', 'ujbmspay', 'ujbmshrs']
+           , 'job demand (stress)': [ 'ujomms'
+                                    , 'ujompi'
+                                    , 'ujomwi'
+                                    , 'ujomfast'
+                                    , 'ujomcd'
+                                    , 'ujomtime' ]
+           , 'job resources': ['ujowpptw', 'ujowpcc']
+           , 'job-satisfaction': ['ujbmsall', 'ujbmswrk']
+           , 'life satisfaction': ['ulosat']
+           , 'long term employment and job security': [ 'ujbmploj'
+                                                      , 'ujbempt'
+                                                      , 'ujbocct'
+                                                      , 'ujomwf'
+                                                      , 'ujomsf'
+                                                      , 'ujbmssec' ]
+           , 'skill-job fit': ['ujomus']
+           , 'turnover intentions': ['ujbnewjs']
+           , 'variety': ['ujomrpt', 'ujomdw', 'ujomvar']
+           , 'well being (mental and physical)': ['ujompi', 'ulosatyh']
+           , 'work engagement': ['ujbmswrk']
+           , 'work-life balance': ['ujbmsflx']
+           , 'working hours': ['ujbmhruw', 'ujbhruc'] }
+
 contractions = { 'authority': ['ujomls']
                , 'autonomy': ['ujomini']
                , 'career and skill development (growth)': [ 'ujoskill'
@@ -225,7 +273,7 @@ contractions = { 'authority': ['ujomls']
                                   , 'ujowpcr'
                                   , 'ujowpptw'
                                   , 'ujowpuml' ]
-               , 'job-satisfaction': ['ujosat', 'ujbmsall']
+               , 'job-satisfaction': ['ujbmswrk', 'ujbmsall']
                , 'life satisfaction': ['uatwkhpj', 'ulosat']
                , 'long term employment and job security': [ 'ujbempt'
                                                           , 'ujbmcntr'
@@ -272,6 +320,67 @@ ISCO88 ={ 11: "Legislators and senior officials"
         , 91: "Sales and services elementary occupations"
         , 92: "Agricultural, fishery and related labourers"
         , 93: "Labourers in mining, construction, manufacturing and transport" }
+
+# Variables relating to literature of causes/effects of job-satisfaction.
+variables = [ 'ujomls'
+            , 'ujomini'
+            , 'ujomns'
+            , 'ulosateo'
+            , 'ujbmagh'
+            , 'ujbmh'
+            , 'ujbmhl'
+            , 'ujbmhrha'
+            , 'ujbmhruc'
+            , 'ujbmsl'
+            , 'ujowpfx'
+            , 'ujowphbw'
+            , 'ujombrk'
+            , 'ujomdw'
+            , 'ujomfd'
+            , 'ujomflex'
+            , 'ujomfw'
+            , 'ujowppml'
+            , 'ujompf'
+            , 'uwscei'
+            , 'uwscg'
+            , 'uwsfei'
+            , 'uwsfes'
+            , 'ujbmshrs'
+            , 'ujbmspay'
+            , 'ulosatfs'
+            , 'ulosatft'
+            , 'ujomcd'
+            , 'ujomfast'
+            , 'ujomms'
+            , 'ujompi'
+            , 'ujomtime'
+            , 'ujomwi'
+            , 'ujowpcc'
+            , 'ujowpptw'
+            , 'ujbmsall'
+            , 'ulosat'
+            , 'ujbempt'
+            , 'ujbmploj'
+            , 'ujbmssec'
+            , 'ujbocct'
+            , 'ujomsf'
+            , 'ujomwf'
+            , 'upnextrv'
+            , 'upnagree'
+            , 'upnconsc'
+            , 'upnemote'
+            , 'upnopene'
+            , 'ujomus'
+            , 'ujbnewjs'
+            , 'ujomdw'
+            , 'ujomrpt'
+            , 'ujomvar'
+            , 'ujompi'
+            , 'ulosatyh'
+            , 'ujbmswrk'
+            , 'ujbmsflx'
+            , 'ujbhruc'
+            , 'ujbmhruw' ]
 
 # Read the HILDA data one way or another.
 if os.path.exists(hilda_spss_path):

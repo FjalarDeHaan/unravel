@@ -15,6 +15,44 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
+def print_all_causal_paths(graph, concepts, labels):
+    for (from_concept, to_concept) in [ (from_concept, to_concept)
+                                        for from_concept in concepts
+                                        for to_concept in concepts
+                                        if from_concept != to_concept ]:
+        ps = causal_paths( graph
+                         , concepts[from_concept]
+                         , concepts[to_concept] )
+        if ps: # If there is any causal path at all...
+            weight = sum([ 1 / (len(p)-1) for p in ps ])
+            i = 0 # Path counter.
+            for p in ps: # For each path...
+                i += 1
+                print( from_concept
+                     , "->"
+                     , to_concept
+                     , "[ %i / %i ]" % (i, len(ps))
+                     , ", weight = %f" % weight )
+                for v in range(len(p)): # Treat each vertex in the path...
+                    if v == 0:
+                        print("(*) ", end='')
+                    else:
+                        print("==> ", end='')
+                    print(meta.column_names_to_labels[p[v]])
+                print()
+
+def causal_paths(graph, from_vertices, to_vertices):
+    paths = []
+    for (fv, tv) in [ (fv, tv) for fv in from_vertices
+                               for tv in to_vertices
+                               if fv != tv ]:
+        try:
+            newpaths = list(nx.all_shortest_paths(graph, fv, tv))
+        except nx.NetworkXNoPath:
+            pass
+        else:
+            paths += newpaths
+    return paths
 
 def clean_edge_props(graph):
     """Destructively remove all edge properties save `width`."""
