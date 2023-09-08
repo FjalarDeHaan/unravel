@@ -81,6 +81,7 @@ def causal_paths(graph, from_vertices, to_vertices):
                                for tv in to_vertices
                                if fv != tv ]:
         try:
+            # TODO: Which is better?
             newpaths = list(nx.all_simple_paths(graph, fv, tv))
             # newpaths = list(nx.all_shortest_paths(graph, fv, tv))
         except nx.NetworkXNoPath:
