@@ -15,31 +15,65 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
-def print_all_causal_paths(graph, concepts, labels):
-    for (from_concept, to_concept) in [ (from_concept, to_concept)
-                                        for from_concept in concepts
-                                        for to_concept in concepts
-                                        if from_concept != to_concept ]:
+def print_all_causal_paths( graph # Causal network.
+                          , concepts # Dictionary of concepts => [ variables ].
+                          , labels # Dictionary of variable => label
+                          , target='all' # Effect concept to consider.
+                          , include_empty=False # Whether to show empty paths.
+                          ):
+    if target == 'all':
+        pairs = [ (from_concept, to_concept)
+                  for from_concept in concepts
+                  for to_concept in concepts
+                  if from_concept != to_concept ]
+    else:
+        pairs = [ (from_concept, target)
+                  for from_concept in concepts
+                  for to_concept in [target]
+                  if from_concept != to_concept ]
+    for (from_concept, to_concept) in pairs:
         ps = causal_paths( graph
                          , concepts[from_concept]
                          , concepts[to_concept] )
-        if ps: # If there is any causal path at all...
-            weight = sum([ 1 / (len(p)-1) for p in ps ])
-            i = 0 # Path counter.
-            for p in ps: # For each path...
-                i += 1
-                print( from_concept
-                     , "->"
-                     , to_concept
-                     , "[ %i / %i ]" % (i, len(ps))
-                     , ", weight = %f" % weight )
-                for v in range(len(p)): # Treat each vertex in the path...
-                    if v == 0:
-                        print("(*) ", end='')
-                    else:
-                        print("==> ", end='')
-                    print(meta.column_names_to_labels[p[v]])
-                print()
+        if include_empty or ps:
+            print("#======================================#")
+            print("# ", from_concept , "->" , to_concept)
+            print("#======================================#")
+        print_causal_paths( graph
+                          , concepts[from_concept]
+                          , concepts[to_concept]
+                          , labels
+                          , include_empty )
+
+def print_causal_paths( graph
+                      , from_vertices
+                      , to_vertices
+                      , labels
+                      , include_empty=True ):
+    # If a vertex set is just a single vertex, put it in a list anyway.
+    if type(from_vertices) != list:
+        from_vertices = [from_vertices]
+    if type(to_vertices) != list:
+        to_vertices = [to_vertices]
+    ps = causal_paths(graph, from_vertices, to_vertices)
+    if ps: # If there is any causal path at all...
+        strength = sum([ 1 / (len(p)-1) for p in ps ])
+        i = 0 # Path counter.
+        for p in ps: # For each path...
+            i += 1
+            print( "[ %i / %i ]" % (i, len(ps))
+                 , ", total causal strength = %f" % strength )
+            for v in range(len(p)): # Treat each vertex in the path...
+                if v == 0:
+                    print("(*) ", end='')
+                else:
+                    print("==> ", end='')
+                print(labels[p[v]])
+            print()
+    elif include_empty: # If there is no causal path and it needs to be shown.
+        print( "[ 0 / 0 ], total causal strength = 0" )
+        print()
+    return len(ps)
 
 def causal_paths(graph, from_vertices, to_vertices):
     paths = []
@@ -47,7 +81,8 @@ def causal_paths(graph, from_vertices, to_vertices):
                                for tv in to_vertices
                                if fv != tv ]:
         try:
-            newpaths = list(nx.all_shortest_paths(graph, fv, tv))
+            newpaths = list(nx.all_simple_paths(graph, fv, tv))
+            # newpaths = list(nx.all_shortest_paths(graph, fv, tv))
         except nx.NetworkXNoPath:
             pass
         else:
