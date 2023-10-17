@@ -15,6 +15,14 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
+def impedance( graph # Weighted directed network.
+             , source # Start vertex.
+             , sink # End vertex.
+             , probability # Likelihood of each edge.
+             ):
+    ...
+    # First obtain all paths from `source` to `sink`.
+
 def print_all_causal_paths( graph # Causal network.
                           , concepts # Dictionary of concepts => [ variables ].
                           , labels # Dictionary of variable => label
