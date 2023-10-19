@@ -8,6 +8,7 @@
 #
 
 import networkx as nx
+import math
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -15,13 +16,61 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
+def weight(graph, edge):
+    """Return the weight of the edge in the graph."""
+    return graph[edge[0]][edge[1]]['weight']
+
 def impedance( graph # Weighted directed network.
              , source # Start vertex.
              , sink # End vertex.
              , probability # Likelihood of each edge.
              ):
+    # First check if `graph` is acyclic. If it is not, give up.
+    if not nx.is_directed_acyclic_graph(graph):
+        raise ValueError("Graphs provided is not a directed acyclic graph.")
+    # First obtain all paths from `source` to `sink` and all edges in them.
+    allpaths = nx.all_simple_paths(graph, source, sink)
+    alledges = [ edge for path in allpaths for edge in path ]
+    # Get the subgraph induced by these paths, ignoring repeated edges.
+    subgraph = nx.DiGraph(nx.edge_subgraph(graph, alledges))
+    # Go down the subgraph from source to sink, breadth first.
+    cursor = source
+    neighbours = graph.neighbors(cursor) 
+    
+    # Collapse all paths without branches to one edge --- edges in series.
     ...
-    # First obtain all paths from `source` to `sink`.
+    # Find all neigbours that are now connected by multiple edges.
+    ...
+    # Collapse the parallel edges.
+
+def merge_ugraphs( graphs # List of NetworkX graphs.
+                 , probabilities # List of probabilities.
+                 ):
+    """Return union of uncertain graphs, using probabilities provided."""
+    # Make a NetworkX directed graph from simple union of graphs provided.
+    graph = nx.compose_all(graphs)
+    # Set weights using probabilities.
+    for edge in graph.edges:
+        # Get list of one-minus-probabilities of graphs containing this edge.
+        ps = [ 1 - probabilities[graphs.index(g)]
+               for g in graphs
+               if g.has_edge(*edge) ]
+        # Probability of edge is 1 - product(1 - p_i).
+        p = 1 - math.prod(ps)
+        # Set the weight with this probability
+        graph.add_edge(*edge, weight=p)
+    # Deliver.
+    return graph
+
+
+
+
+
+
+
+
+
+
 
 def print_all_causal_paths( graph # Causal network.
                           , concepts # Dictionary of concepts => [ variables ].

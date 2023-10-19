@@ -178,11 +178,13 @@ def benchmark( algolist            # The list (strings) of algorithms to use.
     # Deliver.
     return benchmarks
 
-def discover(algolist, data, chunksize=None, target=None):
+def discover(algolist, data, chunksize=None, target=None, intersected=True):
     # In case just one algo is passed, put it in a list anyway.
     if type(algolist) == str: algolist = [algolist]
     # Prepare an empty list to hold the discovered causal graphs' edges.
     edgesets = []
+    # Prepare an empty dictionary to keep the algo => graph pairs.
+    graphs = {}
     # Only do it chunkedly if asked and necessary.
     if chunksize is None or chunksize >= data.shape[0]:
         # Add causal graphs returned by each algorithm.
@@ -191,24 +193,32 @@ def discover(algolist, data, chunksize=None, target=None):
             graph = algos[algo].predict(data)
             # Add the edgeset of the discovered graph to the list.
             edgesets.append(graph.edges)
+            # Add the graph to the dictionary.
+            graphs[algo] = graph
     else:
         # Add causal graphs returned by each algorithm.
         for algo in algolist:
             print("Running %s algorithm in chunks of %i." % ( algo
                                                             , chunksize))
             chunks = partrand(data.columns, chunksize, var=target)
-            graphs = [ algos[algo].predict(data[chunk]) for chunk in chunks ]
-            graph = nx.compose_all(graphs)
+            chunkgraphs = [ algos[algo].predict(data[chunk])
+                            for chunk in chunks ]
+            graph = nx.compose_all(chunkgraphs)
             # Add the edgeset of the discovered graph to the list.
             edgesets.append(graph.edges)
+            # Add the graph to the dictionary.
+            graphs[algo] = graph
     # Collect the intersection of the edge-sets.
     sharededges = set.intersection(*map(set, edgesets))
     # Construct the graph from the intersection.
     graph = nx.DiGraph()
     graph.add_nodes_from(data.columns)
     graph.add_edges_from(sharededges)
-    # Deliver.
-    return graph
+    # Deliver either the intersection or the dictionary of all graphs.
+    if intersected:
+        return graph
+    else:
+        return graphs
 
 def generate( mechanism='linear'
             , noise='gaussian'
