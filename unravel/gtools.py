@@ -20,28 +20,68 @@ def weight(graph, edge):
     """Return the weight of the edge in the graph."""
     return graph[edge[0]][edge[1]]['weight']
 
-def impedance( graph # Weighted directed network.
-             , source # Start vertex.
-             , sink # End vertex.
-             , probability # Likelihood of each edge.
-             ):
+def collapse( graph # Weighted directed network.
+            , source # Start vertex.
+            , sink # End vertex.
+            ):
     # First check if `graph` is acyclic. If it is not, give up.
-    if not nx.is_directed_acyclic_graph(graph):
-        raise ValueError("Graphs provided is not a directed acyclic graph.")
+    # if not nx.is_directed_acyclic_graph(graph):
+        # raise ValueError("Graph provided is not a directed acyclic graph.")
     # First obtain all paths from `source` to `sink` and all edges in them.
-    allpaths = nx.all_simple_paths(graph, source, sink)
+    allpaths = nx.all_simple_edge_paths(graph, source, sink)
     alledges = [ edge for path in allpaths for edge in path ]
     # Get the subgraph induced by these paths, ignoring repeated edges.
-    subgraph = nx.DiGraph(nx.edge_subgraph(graph, alledges))
-    # Go down the subgraph from source to sink, breadth first.
-    cursor = source
-    neighbours = graph.neighbors(cursor) 
-    
-    # Collapse all paths without branches to one edge --- edges in series.
-    ...
-    # Find all neigbours that are now connected by multiple edges.
-    ...
-    # Collapse the parallel edges.
+    g = nx.DiGraph(nx.edge_subgraph(graph, alledges))
+    # Replace the weight attribute of each edge with a list of weights.
+    for edge in g.edges:
+        g.add_edge(*edge, weight=[weight(g, edge)])
+    vstoremove = []
+    newedges = []
+    for v in g:
+        # Only do this for internal collaps-able vertices.
+        if ( v is not source and
+             v is not sink and
+             g.in_degree(v) == 1 and
+             g.out_degree(v) == 1
+           ):
+            # Vertices incident from and to v, respectively.
+            v_in = list(g.predecessors(v))[0]
+            v_out = list(g.successors(v))[0]
+            # Edge to collapse to, may exist already.
+            newedge = v_in, v_out
+            # Keep the list current.
+            newedges.append(newedge)
+            # Combined probability of two consecutive edges existing.
+            newedgep = weight(g, (v_in, v))[0] * weight(g, (v, v_out))[0]
+            # If there is already an edge v_in, v_out, add p to list.
+            if newedge in g.edges:
+                g.add_edge(*newedge, weight=[*weight(g, newedge), newedgep])
+            # If not, make a new edge with only this p in the list.
+            else:
+                g.add_edge(*newedge, weight=[newedgep])
+            vstoremove.append(v)
+    g.remove_nodes_from(vstoremove)
+    # Now collapse the parallel edges.
+    for edge in g.edges:
+        if edge in newedges:
+            ps = weight(g, edge) # List of probabilities between one pair of vs.
+            ps = [ 1 - p for p in ps ] # Probabilities of edges _not_ existing.
+            p = 1 - math.prod(ps) # Probability of _some_ connection existing.
+            g.add_edge(*edge, weight=p)
+        else:
+            p = weight(g, edge)[0]
+            g.add_edge(*edge, weight=p)
+    # If only the source and sink remain, it is done.
+    if len(g) == 2:
+        return g
+    # Otherwise, have another go.
+    else:
+        return collapse(g, source, sink)
+
+def impedance(graph, source, sink):
+    g = collapse(graph, source, sink)
+    edge = list(g.edges)[0]
+    return g[edge[0]][edge[1]]['weight']
 
 def merge_ugraphs( graphs # List of NetworkX graphs.
                  , probabilities # List of probabilities.
@@ -61,16 +101,6 @@ def merge_ugraphs( graphs # List of NetworkX graphs.
         graph.add_edge(*edge, weight=p)
     # Deliver.
     return graph
-
-
-
-
-
-
-
-
-
-
 
 def print_all_causal_paths( graph # Causal network.
                           , concepts # Dictionary of concepts => [ variables ].
@@ -114,7 +144,10 @@ def print_causal_paths( graph
         to_vertices = [to_vertices]
     ps = causal_paths(graph, from_vertices, to_vertices)
     if ps: # If there is any causal path at all...
-        strength = sum([ 1 / (len(p)-1) for p in ps ])
+        imps = [ 1 - impedance(graph, p[0], p[-1])
+                 for p in ps ]
+        strength = 1 - math.prod(imps)
+        # strength = sum([ 1 / (len(p)-1) for p in ps ])
         i = 0 # Path counter.
         for p in ps: # For each path...
             i += 1
