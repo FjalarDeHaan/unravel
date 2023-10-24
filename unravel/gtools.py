@@ -8,6 +8,7 @@
 #
 
 import networkx as nx
+import numpy as np
 import math
 
 import matplotlib
@@ -15,6 +16,36 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 from pyvis.network import Network
+
+
+# NOTE: This double counts partially overlapping paths, thus overestimating.
+def cprobs( A # Probability-weighted directed adjacency matrix (NumPy array).
+          , k # Depth. Maximum allowed length of the causal chain.
+          , i # Source vertex, prime cause.
+          ):
+    # Number of vertices, dimension of the problem.
+    n = A.shape[0]
+    # Prepare the delta vector, zeroes but for the `i`-th entry, which is 1.
+    d = np.zeros(n)
+    d[i] = 1
+    # probability = 1 - product(1 - Ad)
+    X = np.ones(n) # All ones, empty product.
+    for m in range(1, k+1):
+        X *= np.ones(n) - np.linalg.matrix_power(A, m).T @ d
+    # Deliver.
+    return np.ones(n) - X
+
+# NOTE: This double counts partially overlapping paths, thus overestimating.
+def imp(graph, source, sink):
+    # Obtain adjacency matrix.
+    A = nx.adjacency_matrix(graph).todense()
+    # Get the maximum length of a path, assuming `graph` is acyclic.
+    k = A.shape[0]
+    # Get index of `source` and `sink` vertices.
+    i = list(graph.nodes).index(source)
+    j = list(graph.nodes).index(sink)
+    # Return the probability for the sink vertex.
+    return cprobs(A, k, i)[j]
 
 def weight(graph, edge):
     """Return the weight of the edge in the graph."""
@@ -30,6 +61,11 @@ def collapse( graph # Weighted directed network.
     # First obtain all paths from `source` to `sink` and all edges in them.
     allpaths = nx.all_simple_edge_paths(graph, source, sink)
     alledges = [ edge for path in allpaths for edge in path ]
+    if not alledges:
+        nullgraph = nx.DiGraph()
+        nullgraph.add_edge(source, sink)
+        nullgraph[source][sink]['weight'] = 0.0
+        return nullgraph
     # Get the subgraph induced by these paths, ignoring repeated edges.
     g = nx.DiGraph(nx.edge_subgraph(graph, alledges))
     # Replace the weight attribute of each edge with a list of weights.
