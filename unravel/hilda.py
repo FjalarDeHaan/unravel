@@ -339,6 +339,8 @@ else:
     with open(raw_pickle_path, "rb") as f:
         raw = pickle.load(f)
 
+labels = { key: meta.column_names_to_labels[key] for key in variables }
+
 # Produce subsets of HILDA based on Fjalar, Brandon or Josh's columns.
 hildaf = hilda[fcols.keys()]
 hildab = hilda[bcols]

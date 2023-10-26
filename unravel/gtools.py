@@ -10,6 +10,7 @@
 import networkx as nx
 import numpy as np
 import math
+import random
 
 import matplotlib
 matplotlib.use('TkAgg')
@@ -17,35 +18,27 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
-
-# NOTE: This double counts partially overlapping paths, thus overestimating.
-def cprobs( A # Probability-weighted directed adjacency matrix (NumPy array).
-          , k # Depth. Maximum allowed length of the causal chain.
-          , i # Source vertex, prime cause.
+def mcprob( graph # Weighted directed network.
+          , sources # Start vertices.
+          , sinks # End vertices.
+          , probability=None # Probability of edge presence.
+          , iterations=100 # How many times to simulate.
           ):
-    # Number of vertices, dimension of the problem.
-    n = A.shape[0]
-    # Prepare the delta vector, zeroes but for the `i`-th entry, which is 1.
-    d = np.zeros(n)
-    d[i] = 1
-    # probability = 1 - product(1 - Ad)
-    X = np.ones(n) # All ones, empty product.
-    for m in range(1, k+1):
-        X *= np.ones(n) - np.linalg.matrix_power(A, m).T @ d
-    # Deliver.
-    return np.ones(n) - X
-
-# NOTE: This double counts partially overlapping paths, thus overestimating.
-def imp(graph, source, sink):
-    # Obtain adjacency matrix.
-    A = nx.adjacency_matrix(graph).todense()
-    # Get the maximum length of a path, assuming `graph` is acyclic.
-    k = A.shape[0]
-    # Get index of `source` and `sink` vertices.
-    i = list(graph.nodes).index(source)
-    j = list(graph.nodes).index(sink)
-    # Return the probability for the sink vertex.
-    return cprobs(A, k, i)[j]
+    # In case only one source or sink is provided, put them in a lists anyway.
+    if type(sources) != list: sources = [sources]
+    if type(sinks) != list: sinks = [sinks]
+    # Compute how many edges need to be kept/deleted --- pessimistically.
+    mtodelete = math.ceil((1 - probability) * graph.number_of_edges())
+    # Calculate fraction of simulations that has a path from source to sink.
+    npaths = 0
+    for i in range(iterations):
+        g = nx.DiGraph(graph)
+        g.remove_edges_from(random.sample(list(g.edges), mtodelete))
+        if nx.has_path( g
+                      , random.sample(sources, 1)[0]
+                      , random.sample(sinks, 1)[0]):
+            npaths += 1
+    return npaths / iterations
 
 def weight(graph, edge):
     """Return the weight of the edge in the graph."""
@@ -112,6 +105,7 @@ def collapse( graph # Weighted directed network.
         return g
     # Otherwise, have another go.
     else:
+        print("# vertices:", len(list(g.nodes)))
         return collapse(g, source, sink)
 
 def impedance(graph, source, sink):
@@ -180,7 +174,7 @@ def print_causal_paths( graph
         to_vertices = [to_vertices]
     ps = causal_paths(graph, from_vertices, to_vertices)
     if ps: # If there is any causal path at all...
-        imps = [ 1 - impedance(graph, p[0], p[-1])
+        imps = [ 1 - mcprob(graph, p[0], p[-1], probability=.5, iterations=100)
                  for p in ps ]
         strength = 1 - math.prod(imps)
         # strength = sum([ 1 / (len(p)-1) for p in ps ])
@@ -188,7 +182,7 @@ def print_causal_paths( graph
         for p in ps: # For each path...
             i += 1
             print( "[ %i / %i ]" % (i, len(ps))
-                 , ", total causal strength = %f" % strength )
+                 , ", overall path probability = %f" % strength )
             for v in range(len(p)): # Treat each vertex in the path...
                 if v == 0:
                     print("(*) ", end='')
@@ -197,7 +191,7 @@ def print_causal_paths( graph
                 print(labels[p[v]])
             print()
     elif include_empty: # If there is no causal path and it needs to be shown.
-        print( "[ 0 / 0 ], total causal strength = 0" )
+        print( "[ 0 / 0 ], overall path probability = 0" )
         print()
     return len(ps)
 
@@ -206,10 +200,12 @@ def causal_paths(graph, from_vertices, to_vertices):
     for (fv, tv) in [ (fv, tv) for fv in from_vertices
                                for tv in to_vertices
                                if fv != tv ]:
+        # Removing edges in to and from sets avoids over-counting.
+        from_edges = list(nx.DiGraph(graph.subgraph(from_vertices).edges()))
+        to_edges = list(nx.DiGraph(graph.subgraph(to_vertices).edges()))
+        graph.remove_edges_from(from_edges + to_edges)
         try:
-            # TODO: Which is better?
             newpaths = list(nx.all_simple_paths(graph, fv, tv))
-            # newpaths = list(nx.all_shortest_paths(graph, fv, tv))
         except nx.NetworkXNoPath:
             pass
         else:
