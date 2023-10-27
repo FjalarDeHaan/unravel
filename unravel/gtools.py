@@ -18,6 +18,17 @@ import matplotlib.pyplot as plt
 
 from pyvis.network import Network
 
+def intersect(g1, g2):
+    """Return the edge intersection of `g1` and `g2`, keeping all vertices."""
+    edges_g1 = list(g1.edges)
+    edges_g2 = list(g2.edges)
+    edges = set.intersection(set(g1.edges), set(g2.edges))
+    g = nx.DiGraph()
+    g.add_nodes_from(g1)
+    g.add_nodes_from(g2)
+    g.add_edges_from(edges)
+    return g
+
 def mcprob( graph # Weighted directed network.
           , sources # Start vertices.
           , sinks # End vertices.
@@ -136,6 +147,7 @@ def print_all_causal_paths( graph # Causal network.
                           , concepts # Dictionary of concepts => [ variables ].
                           , labels # Dictionary of variable => label
                           , target='all' # Effect concept to consider.
+                          , probability=.5 # Probability of edge presence.
                           , include_empty=False # Whether to show empty paths.
                           ):
     if target == 'all':
@@ -160,12 +172,15 @@ def print_all_causal_paths( graph # Causal network.
                           , concepts[from_concept]
                           , concepts[to_concept]
                           , labels
-                          , include_empty )
+                          , probability=probability
+                          , include_empty=include_empty)
+
 
 def print_causal_paths( graph
                       , from_vertices
                       , to_vertices
                       , labels
+                      , probability=.5
                       , include_empty=True ):
     # If a vertex set is just a single vertex, put it in a list anyway.
     if type(from_vertices) != list:
@@ -174,15 +189,16 @@ def print_causal_paths( graph
         to_vertices = [to_vertices]
     ps = causal_paths(graph, from_vertices, to_vertices)
     if ps: # If there is any causal path at all...
-        imps = [ 1 - mcprob(graph, p[0], p[-1], probability=.5, iterations=100)
-                 for p in ps ]
-        strength = 1 - math.prod(imps)
-        # strength = sum([ 1 / (len(p)-1) for p in ps ])
+        percentage = 100 * mcprob( graph
+                                 , from_vertices, to_vertices
+                                 , probability=probability
+                                 , iterations=10000 )
+        print("Overall probability of a path: %.0f%%" % percentage)
+        print()
         i = 0 # Path counter.
         for p in ps: # For each path...
             i += 1
-            print( "[ %i / %i ]" % (i, len(ps))
-                 , ", overall path probability = %f" % strength )
+            print( "[ %i / %i ]" % (i, len(ps)))
             for v in range(len(p)): # Treat each vertex in the path...
                 if v == 0:
                     print("(*) ", end='')
