@@ -186,25 +186,31 @@ bcols = [ 'ujomus'
         , 'ulosatyh' ]
 
 # Concepts and their HILDA variable representatives.
-concepts = { 'authority': ['ujomls']
-           , 'autonomy': ['ujomini']
+concepts = { 'age': ['uhgage']
+           , 'sex': ['uhgsex']
+           , 'education': ['uedhigh1']
+           , 'seifa': ['uhhsed10']
+           # /\ General  demographic concepts -> variables.
+           #
+           # \/ FoW concepts -> variables. 
+           , 'authority': ['ujomls']
+           , 'autonomy': ['ujomini', 'ujomdw']
            , 'career and skill development (growth)': ['ujomns']
            , 'career opportunities': ['ulosateo']
            , 'flexible work practices': [ 'ujowphbw'
-                                        ,  'ujbmhruc'
-                                        ,  'ujomdw'
-                                        ,  'ujbmh'
-                                        ,  'ujbmhl'
-                                        ,  'ujomfd'
-                                        ,  'ujbmsl'
-                                        ,  'ujombrk'
-                                        ,  'ujowpfx'
-                                        ,  'ujbmagh'
-                                        ,  'ujbmhrha'
-                                        ,  'ujomfw'
-                                        ,  'ujomflex' ]
-           , 'income': [ 'ujowppml'
-                       , 'uwsfei'
+                                        , 'ujbmhruc'
+                                        , 'ujbmh'
+                                        , 'ujbmhl'
+                                        , 'ujomfd'
+                                        , 'ujbmsl'
+                                        , 'ujombrk'
+                                        , 'ujowpfx'
+                                        , 'ujbmagh'
+                                        , 'ujbmhrha'
+                                        , 'ujomfw'
+                                        , 'ujomflex' ]
+           , 'income': [ # 'ujowppml' # Paid maternity leave.
+                         'uwsfei'
                        , 'ujompf'
                        , 'uwsfes'
                        , 'uwscei'
@@ -230,11 +236,18 @@ concepts = { 'authority': ['ujomls']
                             , 'upnconsc'
                             , 'upnemote'
                             , 'upnopene' ]
-           , 'skill-job fit': ['ujomus']
+           , 'skill-job fit': ['ujomus', 'ujsrealt']
            , 'turnover intentions': ['ujbnewjs']
-           , 'variety': ['ujomrpt', 'ujomdw', 'ujomvar']
-           , 'well being (mental and physical)': ['ujompi', 'ulosatyh']
-           , 'work engagement': ['ujbmswrk']
+           , 'variety': ['ujomrpt', 'ujomvar']
+           , 'well being (mental and physical)': ['ulosatyh']
+           , 'mental health': [ 'ujbumnt'
+                              , 'uhemirh'
+                              , 'uheomi'
+                              , 'uhepmomi'
+                              , 'uhecpmhp'
+                              , 'uhemirhn'
+                              , 'ughmh' ]
+           # , 'work engagement': ['ujbmswrk']
            , 'work-life balance': ['ujbmsflx']
            , 'working hours': ['ujbmhruw', 'ujbhruc'] }
 

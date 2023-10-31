@@ -217,11 +217,11 @@ def causal_paths(graph, from_vertices, to_vertices):
                                for tv in to_vertices
                                if fv != tv ]:
         # Removing edges in to and from sets avoids over-counting.
-        from_edges = list(nx.DiGraph(graph.subgraph(from_vertices).edges()))
-        to_edges = list(nx.DiGraph(graph.subgraph(to_vertices).edges()))
+        from_edges = list(graph.subgraph(from_vertices).edges())
+        to_edges = list(graph.subgraph(to_vertices).edges())
         graph.remove_edges_from(from_edges + to_edges)
         try:
-            newpaths = list(nx.all_simple_paths(graph, fv, tv))
+            newpaths = list(nx.all_simple_paths(graph, fv, tv, cutoff=10))
         except nx.NetworkXNoPath:
             pass
         else:
