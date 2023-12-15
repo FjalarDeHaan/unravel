@@ -35,7 +35,7 @@ def mcprob( graph # Weighted directed network.
           , probability=None # Probability of edge presence.
           , iterations=100 # How many times to simulate.
           ):
-    # In case only one source or sink is provided, put them in a lists anyway.
+    # In case only one source or sink is provided, put them in a list anyway.
     if type(sources) != list: sources = [sources]
     if type(sinks) != list: sinks = [sinks]
     # Compute how many edges need to be kept/deleted --- pessimistically.
@@ -45,9 +45,11 @@ def mcprob( graph # Weighted directed network.
     for i in range(iterations):
         g = nx.DiGraph(graph)
         g.remove_edges_from(random.sample(list(g.edges), mtodelete))
-        if nx.has_path( g
-                      , random.sample(sources, 1)[0]
-                      , random.sample(sinks, 1)[0]):
+        paths = []
+        for source in sources:
+            for sink in sinks:
+                paths.append(nx.has_path(g, source, sink))
+        if any(paths):
             npaths += 1
     return npaths / iterations
 
