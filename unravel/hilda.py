@@ -192,7 +192,7 @@ concepts = { 'age': ['uhgage']
            , 'seifa': ['uhhsed10']
            # /\ General  demographic concepts -> variables.
            #
-           # \/ FoW concepts -> variables. 
+           # \/ FoW concepts -> variables.
            , 'authority': ['ujomls']
            , 'autonomy': ['ujomini', 'ujomdw']
            , 'career and skill development (growth)': ['ujomns']
@@ -403,5 +403,7 @@ def label(g):
     """Return labelled version of HILDA-based graph."""
     return nx.relabel_nodes(g, labeldict(g))
 
+def find(keyword):
+    pass
 
 if __name__ == '__main__': pass

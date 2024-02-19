@@ -11,6 +11,7 @@ import networkx as nx
 import numpy as np
 import math
 import random
+import copy
 
 import matplotlib
 matplotlib.use('TkAgg')
