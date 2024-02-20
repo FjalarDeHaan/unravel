@@ -403,7 +403,21 @@ def label(g):
     """Return labelled version of HILDA-based graph."""
     return nx.relabel_nodes(g, labeldict(g))
 
-def find(keyword):
-    pass
+def find(keywords, data=None):
+    if type(keywords) != list: keywords = [keywords]
+    def subfind(keyword, data=None):
+        if data is not None:
+            return { var: lab
+                     for var, lab in data.items()
+                     if keyword.lower() in lab.lower() }
+        else:
+            return { var: lab
+                     for var, lab in meta.column_names_to_labels.items()
+                     if keyword.lower() in lab.lower() }
+    d = {}
+    for keyword in keywords:
+        d = {**d, **subfind(keyword)}
+    return d
+
 
 if __name__ == '__main__': pass
