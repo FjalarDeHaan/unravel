@@ -186,7 +186,7 @@ bcols = [ 'ujomus'
         , 'ulosatyh' ]
 
 # Concepts and their HILDA variable representatives.
-concepts = { 'age': ['uhgage']
+_concepts = { 'age': ['uhgage']
            , 'sex': ['uhgsex']
            , 'education': ['uedhigh1']
            , 'seifa': ['uhhsed10']
@@ -311,6 +311,10 @@ contractions = { 'authority': ['ujomls']
                , 'working hours': ['ujbhruc', 'ujbhru', 'ujbmhruw']
                , 'workplace training satisfaction': ['ujbtremp']
                }
+
+# New concept dictionary based on ILO report Balliester & Elsheikhi (2018).
+concepts = {}
+
 ISCO88 ={ 11: "Legislators and senior officials"
         , 12: "Corporate managers"
         , 13: "General managers"
