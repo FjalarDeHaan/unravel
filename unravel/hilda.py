@@ -186,7 +186,7 @@ bcols = [ 'ujomus'
         , 'ulosatyh' ]
 
 # Concepts and their HILDA variable representatives.
-_concepts = { 'age': ['uhgage']
+concepts = { 'age': ['uhgage']
            , 'sex': ['uhgsex']
            , 'education': ['uedhigh1']
            , 'seifa': ['uhhsed10']
@@ -312,9 +312,6 @@ contractions = { 'authority': ['ujomls']
                , 'workplace training satisfaction': ['ujbtremp']
                }
 
-# New concept dictionary based on ILO report Balliester & Elsheikhi (2018).
-concepts = {}
-
 ISCO88 ={ 11: "Legislators and senior officials"
         , 12: "Corporate managers"
         , 13: "General managers"
@@ -420,8 +417,48 @@ def find(keywords, data=None):
                      if keyword.lower() in lab.lower() }
     d = {}
     for keyword in keywords:
-        d = {**d, **subfind(keyword)}
+        d = {**d, **subfind(keyword, data=data)}
     return d
 
+def finddf(keywords, data=None):
+    d = find(keywords, data=data)
+    df = pd.DataFrame(columns=["variable", "label", "range"])
+    for var, label in d.items():
+        r = meta.value_labels[meta.variable_to_label[var]]
+        row = pd.DataFrame( { "variable": [var]
+                            , "label": [label]
+                            , "range": [r] } )
+        df = pd.concat([df, row])
+    df.index = range(len(d))
+    return df
+
+def findand(keywords, data=None):
+    if len(keywords) == 1:
+        return find(keywords, data=data)
+    else:
+        return findand(keywords[1:], data=findand([keywords[0]], data=data))
+
+def finddfand(keywords, data=None):
+    d = findand(keywords, data=data)
+    df = pd.DataFrame(columns=["variable", "label", "range"])
+    for var, label in d.items():
+        r = meta.value_labels[meta.variable_to_label[var]]
+        row = pd.DataFrame( { "variable": [var]
+                            , "label": [label]
+                            , "range": [r] } )
+        df = pd.concat([df, row])
+    df.index = range(len(d))
+    return df
+
+def finddfkeys(d):
+    df = pd.DataFrame(columns=["variable", "label", "range"])
+    for var, label in d.items():
+        r = meta.value_labels[meta.variable_to_label[var]]
+        row = pd.DataFrame( { "variable": [var]
+                            , "label": [label]
+                            , "range": [r] } )
+        df = pd.concat([df, row])
+    df.index = range(len(d))
+    return df
 
 if __name__ == '__main__': pass
