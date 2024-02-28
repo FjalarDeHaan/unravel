@@ -348,12 +348,16 @@ def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
         x_shift, y_shift = offset
     posprime = {v: (x + x_shift, y + y_shift) for v, (x, y) in pos.items()}
 
+    # Make a list of the edge weights to inform the edge widths.
+    widths = nx.get_edge_attributes(g, 'weight')
+
     # Draw the graph and the labels.
     if boxed:
         nx.draw_networkx( g, pos=pos, with_labels=False
                         , node_size=42
                         , node_color='#FFFFFF'
                         , linewidths=0
+                        , width=list(widths.values())
                         , edgecolors='#000000'
                         #, arrowstyle='fancy'
                         )
