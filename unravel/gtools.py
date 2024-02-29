@@ -302,10 +302,12 @@ def ingraph(digraph, vertex):
     vertices = vertices.union(digraph.predecessors(vertex))
     return digraph.subgraph(vertices)
 
-def outgraph(digraph, vertex):
+def outgraph(digraph, vertex, depth=1):
     """Return subgraph induced by `vertex` and vertices adjacent _from_ it."""
     vertices = {vertex}
-    vertices = vertices.union(digraph.successors(vertex))
+    for i in range(depth):
+        for v in vertices:
+            vertices = vertices.union({v for v in digraph.successors(v)})
     return digraph.subgraph(vertices)
 
 def causes(digraph, vertex):
@@ -330,6 +332,11 @@ def subgraph(g, v, depth=1):
             newvs = {v for v in nx.all_neighbors(g, v)}
             vertices = vertices.union(newvs)
     return g.subgraph(vertices)
+
+def ranking(graph, depth=1):
+    d = { vertex: len(outgraph(g, vertex, depth=depth)) for vertex in graph }
+    d = { k: v for k, v in sorted(d.items(), key=lambda t: t[1], reverse=True) }
+    return d
 
 def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
     # Obtain a layout for the graph.
