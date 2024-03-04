@@ -334,8 +334,8 @@ def subgraph(g, v, depth=1):
     return g.subgraph(vertices)
 
 def ranking(graph, depth=1):
-    d = { vertex: len(outgraph(g, vertex, depth=depth)) for vertex in graph }
-    d = { k: v for k, v in sorted(d.items(), key=lambda t: t[1], reverse=True) }
+    d = {vertex: len(outgraph(graph, vertex, depth=depth)) for vertex in graph}
+    d = {k: v for k, v in sorted(d.items(), key=lambda t: t[1], reverse=True)}
     return d
 
 def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
@@ -364,7 +364,7 @@ def gplot(g, offset=(0.01, -0.01), boxed=True, layout='random'):
                         , node_size=42
                         , node_color='#FFFFFF'
                         , linewidths=0
-                        , width=list(widths.values())
+                        #, width=list(widths.values())
                         , edgecolors='#000000'
                         #, arrowstyle='fancy'
                         )
