@@ -22,6 +22,7 @@ project_path = ( "/home/fjalar/pCloudDrive/"
 hilda_spss_path = project_path+"data/hilda2021/spss-210c/Combined u210c.sav"
 hilda_pickle_path = project_path+"data/hilda2020/hilda-combined-t200c.pickle"
 raw_pickle_path = project_path+"data/hilda2020/hilda-combined-t200c-raw.pickle"
+concept_path = project_path+"13days-analysis/concepts2hildavars.csv"
 
 def clean(raw, fill='mode'):
     """Clean HILDA data."""
@@ -186,7 +187,7 @@ bcols = [ 'ujomus'
         , 'ulosatyh' ]
 
 # Concepts and their HILDA variable representatives.
-concepts = { 'age': ['uhgage']
+concepts_old = { 'age': ['uhgage']
            , 'sex': ['uhgsex']
            , 'education': ['uedhigh1']
            , 'seifa': ['uhhsed10']
@@ -339,6 +340,9 @@ ISCO88 ={ 11: "Legislators and senior officials"
         , 91: "Sales and services elementary occupations"
         , 92: "Agricultural, fishery and related labourers"
         , 93: "Labourers in mining, construction, manufacturing and transport" }
+
+c2h = pd.read_csv(concept_path)
+concepts = { k: v['variable'].to_list() for k, v in c2h.groupby('concept') }
 
 # Variables relating to literature of causes/effects of job-satisfaction.
 variables = [ var for sublist in list(concepts.values()) for var in sublist ]

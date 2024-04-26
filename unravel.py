@@ -11,6 +11,7 @@ from unravel import *
 from unravel.hilda import *
 
 import multiprocessing
+import copy
 
 
 def cli_args():
@@ -144,6 +145,118 @@ def run_isco_colsampled(algo='GIES', isco=None, ncols=10, niters=10):
             composition = nx.compose(composition, g)
 
         return gs, composition
+
+def collapsed_graph( data # Sub-set of hilda data.
+                   , algos = ['PC', 'GES'] # List of algorithms to use.
+                   , probability = .6 # Likelihood of existence of edge.
+                   , iterations = 100 # How many times to sample in MC process.
+                   ):
+    # Get the intersection of the causal graphs from the list algorithms.
+    g = discover(algos, data[c2h.variable.to_list()], intersected=True)
+    # Compute edge list with MC probabilities for collapsed graph.
+    A = [ (c1, c2, mcprob( g
+                         , concepts[c1], concepts[c2]
+                         , probability=.6, iterations=100 ))
+          for c1 in concepts for c2 in concepts if c1 != c2 ]
+    # Prepare an empty directed graph.
+    dg = nx.DiGraph()
+    # Add the edges from the edge list.
+    dg.add_weighted_edges_from(A)
+    # Deliver.
+    return dg
+
+combinations = { 'sex': [ "any", "male", "female" ]
+               , 'age': [ "any"
+                        , "0-9"
+                        , "10-19"
+                        , "20-29"
+                        , "30-39"
+                        , "40-49"
+                        , "50-59"
+                        , "60-69"
+                        , "70-79"
+                        , "80-89"
+                        , "90-99"
+                        , "100-110" ]
+                , 'isco': ["any"] + iscover100
+                , 'education': ["any"] + [i for i in range(1, 11)]
+                , 'seifa': ["any"] +[i for i in range(1, 11)]
+                }
+
+def subsethilda( sex = "any"
+               , age = "any"
+               , isco = "any"
+               , education = "any"
+               , seifa = "any" ):
+    # ISCO first and making sure none of this is destructive.
+    if isco == "any":
+        h = copy.deepcopy(hilda)
+    elif isco in iscover100:
+        h = copy.deepcopy(hilda_by_isco(isco))
+    else:
+        print("Error: wrong isco key.")
+    # Filter on 'sex'.
+    if sex == "any":
+        pass
+    elif sex == 'male':
+        h = h[h['uhgsex'] == 1]
+    elif sex == 'female':
+        h = h[h['uhgsex'] == 2]
+    else:
+        print("Error: wrong sex key.")
+    # Filter on 'age'.
+    if age == "any":
+        pass
+    elif age == "0-9":
+        h = h[h[concepts['age'][0]].between(0, 10, inclusive='left')]
+    elif age == "10-19":
+        h = h[h[concepts['age'][0]].between(10, 20, inclusive='left')]
+    elif age == "20-29":
+        h = h[h[concepts['age'][0]].between(20, 30, inclusive='left')]
+    elif age == "30-39":
+        h = h[h[concepts['age'][0]].between(30, 40, inclusive='left')]
+    elif age == "40-49":
+        h = h[h[concepts['age'][0]].between(40, 50, inclusive='left')]
+    elif age == "50-59":
+        h = h[h[concepts['age'][0]].between(50, 60, inclusive='left')]
+    elif age == "60-69":
+        h = h[h[concepts['age'][0]].between(60, 70, inclusive='left')]
+    elif age == "70-79":
+        h = h[h[concepts['age'][0]].between(70, 80, inclusive='left')]
+    elif age == "80-89":
+        h = h[h[concepts['age'][0]].between(80, 90, inclusive='left')]
+    elif age == "90-99":
+        h = h[h[concepts['age'][0]].between(90, 100, inclusive='left')]
+    elif age == "100+":
+        h = h[h[concepts['age'][0]] >= 100]
+    else:
+        print("Error: wrong age key.")
+    # Filter on 'education'.
+    if education == "any":
+        pass
+    elif education in [i for i in range(1, 11)]:
+        h = h[ h[concepts['education'][0]] == education ]
+    else:
+        print("Error: wrong education key.")
+    # Filter on 'seifa'.
+    if seifa == "any":
+        pass
+    elif seifa in [i for i in range(1, 11)]:
+        h = h[ h[concepts['seifa'][0]] == seifa ]
+    else:
+        print("Error: wrong seifa key.")
+    # Deliver.
+    return h
+
+graphkeys = [ (sex, age, isco, education, seifa)
+              for sex in combinations['sex']
+              for age in combinations['age']
+              for isco in combinations['isco']
+              for education in combinations['education']
+              for seifa in combinations['seifa'] ]
+
+def graphdict():
+    return { gk: collapsed_graph(subsethilda(*gk)) for gk in graphkeys }
 
 
 if __name__ == '__main__':
